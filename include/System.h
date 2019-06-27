@@ -23,13 +23,12 @@
 * For more information see <https://github.com/raulmur/ORB_SLAM2>
 */
 
-
 #ifndef SYSTEM_H
 #define SYSTEM_H
 
-#include<string>
-#include<thread>
-#include<opencv2/core/core.hpp>
+#include <string>
+#include <thread>
+#include <opencv2/core/core.hpp>
 
 #include "Tracking.h"
 #include "FrameDrawer.h"
@@ -59,28 +58,28 @@ class System
 {
 public:
     // Input sensor
-    enum eSensor{
-        MONOCULAR=0,
-        STEREO=1,
-        RGBD=2
+    enum eSensor
+    {
+        MONOCULAR = 0,
+        STEREO = 1,
+        RGBD = 2
     };
 
 public:
-
     // Initialize the SLAM system. It launches the Local Mapping, Loop Closing and Viewer threads.
     System(const string &strVocFile);
 
     // Init robot. Must becalled for all robots prior to running SLAM
-    void InitAgent( int nAgentId, std::string strSettings, Sensor sensor, bool bUseViewer );
+    void InitAgent(int nAgentId, std::string strSettings, Sensor sensor, bool bUseViewer);
 
     // Proccess the given stereo frame. Images must be synchronized and rectified.
     // Input images: RGB (CV_8UC3) or grayscale (CV_8U). RGB is converted to grayscale.
     // Returns the camera pose (empty if tracking fails).
     cv::Mat TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const double &timestamp, int nAgentId);
     cv::Mat TrackStereoCompressed(const FrameInfo &info, const std::vector<cv::KeyPoint> &keyPointsLeft,
-    		const cv::Mat &descriptorLeft, const std::vector<unsigned int> &visualWords,
-    		const std::vector<cv::KeyPoint> &keyPointsRight, const cv::Mat &descriptorRight,
-    		const double &timestamp, int nAgentId);
+                                  const cv::Mat &descriptorLeft, const std::vector<unsigned int> &visualWords,
+                                  const std::vector<cv::KeyPoint> &keyPointsRight, const cv::Mat &descriptorRight,
+                                  const double &timestamp, int nAgentId);
 
     // Process the given rgbd frame. Depthmap must be registered to the RGB frame.
     // Input image: RGB (CV_8UC3) or grayscale (CV_8U). RGB is converted to grayscale.
@@ -88,8 +87,8 @@ public:
     // Returns the camera pose (empty if tracking fails).
     cv::Mat TrackRGBD(const cv::Mat &im, const cv::Mat &depthmap, const double &timestamp, int nAgentId);
     cv::Mat TrackRGBDCompressed(const FrameInfo &info, const std::vector<cv::KeyPoint> &keyPointsLeft,
-    		const cv::Mat &descriptorLeft, const std::vector<unsigned int> &visualWords,
-    		const std::vector<float> &vfDepthValues, const double &timestamp, int nAgentId);
+                                const cv::Mat &descriptorLeft, const std::vector<unsigned int> &visualWords,
+                                const std::vector<float> &vfDepthValues, const double &timestamp, int nAgentId);
 
     // Proccess the given monocular frame
     // Input images: RGB (CV_8UC3) or grayscale (CV_8U). RGB is converted to grayscale.
@@ -113,16 +112,13 @@ public:
     // This function must be called before saving the trajectory.
     void Shutdown();
 
-
     // Save camera trajectory in the KITTI dataset format.
     // Only for stereo and RGB-D. This method does not work for monocular.
     // Call first Shutdown()
     // See format details at: http://www.cvlibs.net/datasets/kitti/eval_odometry.php
     void SaveTrajectoryKITTI(const string &filename);
 
-
     void SaveTrajectoryEuroC(const string &filename);
-
 
     // TODO: Save/Load functions
     // For map saving look at: https://d-vo.github.io/WACV18/
@@ -133,10 +129,11 @@ public:
     // You can call this right after TrackMonocular (or stereo or RGBD)
     int GetTrackingState();
 
+    // Serialize nAgentId's data to stdout
+    void SerializeData(int nAgentId, cv::Mat Tcw);
 
 public:
     static unsigned int gnNumRobots;
-
 
 private:
     // Input sensor
@@ -145,8 +142,7 @@ private:
     MapDatabase *mpMapDatabase;
 
     // ORB vocabulary used for place recognition and feature matching.
-    ORBVocabulary* mpVocabulary;
-
+    ORBVocabulary *mpVocabulary;
 
     // Reset flag
     std::mutex mMutexReset;
@@ -159,11 +155,11 @@ private:
 
     // Tracking state
     int mTrackingState;
-    std::vector<MapPoint*> mTrackedMapPoints;
+    std::vector<MapPoint *> mTrackedMapPoints;
     std::vector<cv::KeyPoint> mTrackedKeyPointsUn;
     std::mutex mMutexState;
 };
 
-}// namespace ORB_SLAM
+} // namespace CORB_SLAM2
 
 #endif // SYSTEM_H

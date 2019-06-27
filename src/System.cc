@@ -23,8 +23,6 @@
 * For more information see <https://github.com/raulmur/ORB_SLAM2>
 */
 
-
-
 #include "System.h"
 #include "Converter.h"
 #include <thread>
@@ -35,44 +33,42 @@ namespace CORB_SLAM2
 {
 
 System::System(const string &strVocFile)
-: mbReset(false),mbActivateLocalizationMode(false),
-  mbDeactivateLocalizationMode(false)
+	: mbReset(false), mbActivateLocalizationMode(false),
+	  mbDeactivateLocalizationMode(false)
 {
 	// Output welcome message
-	cout << endl <<
-			"ORB-SLAM2 Copyright (C) 2014-2016 Raul Mur-Artal, University of Zaragoza." << endl <<
-			"This program comes with ABSOLUTELY NO WARRANTY;" << endl  <<
-			"This is free software, and you are welcome to redistribute it" << endl <<
-			"under certain conditions. See LICENSE.txt." << endl << endl;
-
-
+	cout << endl
+		 << "ORB-SLAM2 Copyright (C) 2014-2016 Raul Mur-Artal, University of Zaragoza." << endl
+		 << "This program comes with ABSOLUTELY NO WARRANTY;" << endl
+		 << "This is free software, and you are welcome to redistribute it" << endl
+		 << "under certain conditions. See LICENSE.txt." << endl
+		 << endl;
 
 	//Load ORB Vocabulary
-	cout << endl << "Loading ORB Vocabulary. This could take a while..." << endl;
+	cout << endl
+		 << "Loading ORB Vocabulary. This could take a while..." << endl;
 
 	mpVocabulary = new ORBVocabulary();
 	bool bVocLoad = mpVocabulary->loadFromTextFile(strVocFile);
-	if(!bVocLoad)
+	if (!bVocLoad)
 	{
 		cerr << "Wrong path to vocabulary. " << endl;
 		cerr << "Falied to open at: " << strVocFile << endl;
 		exit(-1);
 	}
-	cout << "Vocabulary loaded!" << endl << endl;
-
-
+	cout << "Vocabulary loaded!" << endl
+		 << endl;
 
 	// MULTI ROBOT
 	mpMapDatabase = new MapDatabase(this, mpVocabulary);
 }
 
-void System::InitAgent( int nRobotId, std::string strSettings, Sensor sensor, bool bUseViewer )
+void System::InitAgent(int nRobotId, std::string strSettings, Sensor sensor, bool bUseViewer)
 {
 	SLAMConfig *pSlamConfig = new SLAMConfig;
 	pSlamConfig->Load(strSettings);
 	mpMapDatabase->AddMap(nRobotId, pSlamConfig, sensor, bUseViewer);
 }
-
 
 cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const double &timestamp, int nRobotId)
 {
@@ -82,12 +78,12 @@ cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const
 	// Check mode change
 	{
 		unique_lock<mutex> lock(mMutexMode);
-		if(mbActivateLocalizationMode)
+		if (mbActivateLocalizationMode)
 		{
 			pLocalMapper->RequestStop();
 
 			// Wait until Local Mapping has effectively stopped
-			while(!pLocalMapper->isStopped())
+			while (!pLocalMapper->isStopped())
 			{
 				usleep(1000);
 			}
@@ -95,7 +91,7 @@ cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const
 			pTracker->InformOnlyTracking(true);
 			mbActivateLocalizationMode = false;
 		}
-		if(mbDeactivateLocalizationMode)
+		if (mbDeactivateLocalizationMode)
 		{
 			pTracker->InformOnlyTracking(false);
 			pLocalMapper->Release();
@@ -106,26 +102,27 @@ cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const
 	// Check reset
 	{
 		unique_lock<mutex> lock(mMutexReset);
-		if(mbReset)
+		if (mbReset)
 		{
 			pTracker->Reset();
 			mbReset = false;
 		}
 	}
 
-	cv::Mat Tcw = pTracker->GrabImageStereo(imLeft,imRight,timestamp);
+	cv::Mat Tcw = pTracker->GrabImageStereo(imLeft, imRight, timestamp);
 
 	unique_lock<mutex> lock2(mMutexState);
 	mTrackingState = pTracker->mState;
 	mTrackedMapPoints = pTracker->mCurrentFrame.mvpMapPoints;
 	mTrackedKeyPointsUn = pTracker->mCurrentFrame.mvKeysUn;
+	SerializeData(nRobotId, Tcw);
 	return Tcw;
 }
 
 cv::Mat System::TrackStereoCompressed(const FrameInfo &info, const std::vector<cv::KeyPoint> &keyPointsLeft,
-		const cv::Mat &descriptorLeft, const std::vector<unsigned int> &visualWords,
-		const std::vector<cv::KeyPoint> &keyPointsRight, const cv::Mat &descriptorRight,
-		const double &timestamp, int nRobotId)
+									  const cv::Mat &descriptorLeft, const std::vector<unsigned int> &visualWords,
+									  const std::vector<cv::KeyPoint> &keyPointsRight, const cv::Mat &descriptorRight,
+									  const double &timestamp, int nRobotId)
 {
 	Tracking *pTracker = mpMapDatabase->GetMapHolderByAgentId(nRobotId)->pTracker;
 	LocalMapping *pMapper = mpMapDatabase->GetMapHolderByAgentId(nRobotId)->pLocalMapper;
@@ -133,12 +130,12 @@ cv::Mat System::TrackStereoCompressed(const FrameInfo &info, const std::vector<c
 	// Check mode change
 	{
 		unique_lock<mutex> lock(mMutexMode);
-		if(mbActivateLocalizationMode)
+		if (mbActivateLocalizationMode)
 		{
 			pMapper->RequestStop();
 
 			// Wait until Local Mapping has effectively stopped
-			while(!pMapper->isStopped())
+			while (!pMapper->isStopped())
 			{
 				usleep(1000);
 			}
@@ -146,7 +143,7 @@ cv::Mat System::TrackStereoCompressed(const FrameInfo &info, const std::vector<c
 			pTracker->InformOnlyTracking(true);
 			mbActivateLocalizationMode = false;
 		}
-		if(mbDeactivateLocalizationMode)
+		if (mbDeactivateLocalizationMode)
 		{
 			pTracker->InformOnlyTracking(false);
 			pMapper->Release();
@@ -157,27 +154,25 @@ cv::Mat System::TrackStereoCompressed(const FrameInfo &info, const std::vector<c
 	// Check reset
 	{
 		unique_lock<mutex> lock(mMutexReset);
-		if(mbReset)
+		if (mbReset)
 		{
 			pTracker->Reset();
 			mbReset = false;
 		}
 	}
 
-	cv::Mat Tcw = pTracker->GrabImageStereoCompressed(info, keyPointsLeft,descriptorLeft, visualWords,
-			keyPointsRight,descriptorRight,timestamp);
+	cv::Mat Tcw = pTracker->GrabImageStereoCompressed(info, keyPointsLeft, descriptorLeft, visualWords,
+													  keyPointsRight, descriptorRight, timestamp);
 
 	unique_lock<mutex> lock2(mMutexState);
 	mTrackingState = pTracker->mState;
+	SerializeData(nRobotId, Tcw);
 	return Tcw;
 }
 
-
-
-
 cv::Mat System::TrackRGBD(const cv::Mat &im, const cv::Mat &depthmap, const double &timestamp, int nRobotId)
 {
-	if(mSensor!=RGBD)
+	if (mSensor != RGBD)
 	{
 		cerr << "ERROR: you called TrackRGBD but input sensor was not set to RGBD." << endl;
 		exit(-1);
@@ -189,12 +184,12 @@ cv::Mat System::TrackRGBD(const cv::Mat &im, const cv::Mat &depthmap, const doub
 	// Check mode change
 	{
 		unique_lock<mutex> lock(mMutexMode);
-		if(mbActivateLocalizationMode)
+		if (mbActivateLocalizationMode)
 		{
 			pLocalMapper->RequestStop();
 
 			// Wait until Local Mapping has effectively stopped
-			while(!pLocalMapper->isStopped())
+			while (!pLocalMapper->isStopped())
 			{
 				usleep(1000);
 			}
@@ -202,7 +197,7 @@ cv::Mat System::TrackRGBD(const cv::Mat &im, const cv::Mat &depthmap, const doub
 			pTracker->InformOnlyTracking(true);
 			mbActivateLocalizationMode = false;
 		}
-		if(mbDeactivateLocalizationMode)
+		if (mbDeactivateLocalizationMode)
 		{
 			pTracker->InformOnlyTracking(false);
 			pLocalMapper->Release();
@@ -213,26 +208,26 @@ cv::Mat System::TrackRGBD(const cv::Mat &im, const cv::Mat &depthmap, const doub
 	// Check reset
 	{
 		unique_lock<mutex> lock(mMutexReset);
-		if(mbReset)
+		if (mbReset)
 		{
 			pTracker->Reset();
 			mbReset = false;
 		}
 	}
 
-	cv::Mat Tcw = pTracker->GrabImageRGBD(im,depthmap,timestamp);
+	cv::Mat Tcw = pTracker->GrabImageRGBD(im, depthmap, timestamp);
 
 	unique_lock<mutex> lock2(mMutexState);
 	mTrackingState = pTracker->mState;
 	mTrackedMapPoints = pTracker->mCurrentFrame.mvpMapPoints;
 	mTrackedKeyPointsUn = pTracker->mCurrentFrame.mvKeysUn;
+	SerializeData(nRobotId, Tcw);
 	return Tcw;
 }
 
-
 cv::Mat System::TrackRGBDCompressed(const FrameInfo &info, const std::vector<cv::KeyPoint> &keypoints,
-		const cv::Mat &descriptors, const std::vector<unsigned int> &visualWords,
-		const std::vector<float> &vfDepthValues, const double &timestamp, int nRobotId)
+									const cv::Mat &descriptors, const std::vector<unsigned int> &visualWords,
+									const std::vector<float> &vfDepthValues, const double &timestamp, int nRobotId)
 {
 	Tracking *pTracker = mpMapDatabase->GetMapHolderByAgentId(nRobotId)->pTracker;
 	LocalMapping *pMapper = mpMapDatabase->GetMapHolderByAgentId(nRobotId)->pLocalMapper;
@@ -240,12 +235,12 @@ cv::Mat System::TrackRGBDCompressed(const FrameInfo &info, const std::vector<cv:
 	// Check mode change
 	{
 		unique_lock<mutex> lock(mMutexMode);
-		if(mbActivateLocalizationMode)
+		if (mbActivateLocalizationMode)
 		{
 			pMapper->RequestStop();
 
 			// Wait until Local Mapping has effectively stopped
-			while(!pMapper->isStopped())
+			while (!pMapper->isStopped())
 			{
 				usleep(1000);
 			}
@@ -253,7 +248,7 @@ cv::Mat System::TrackRGBDCompressed(const FrameInfo &info, const std::vector<cv:
 			pTracker->InformOnlyTracking(true);
 			mbActivateLocalizationMode = false;
 		}
-		if(mbDeactivateLocalizationMode)
+		if (mbDeactivateLocalizationMode)
 		{
 			pTracker->InformOnlyTracking(false);
 			pMapper->Release();
@@ -264,7 +259,7 @@ cv::Mat System::TrackRGBDCompressed(const FrameInfo &info, const std::vector<cv:
 	// Check reset
 	{
 		unique_lock<mutex> lock(mMutexReset);
-		if(mbReset)
+		if (mbReset)
 		{
 			pTracker->Reset();
 			mbReset = false;
@@ -275,12 +270,13 @@ cv::Mat System::TrackRGBDCompressed(const FrameInfo &info, const std::vector<cv:
 
 	unique_lock<mutex> lock2(mMutexState);
 	mTrackingState = pTracker->mState;
+	SerializeData(nRobotId, Tcw);
 	return Tcw;
 }
 
 cv::Mat System::TrackMonocular(const cv::Mat &im, const double &timestamp, int nRobotId)
 {
-	if(mSensor!=MONOCULAR)
+	if (mSensor != MONOCULAR)
 	{
 		cerr << "ERROR: you called TrackMonocular but input sensor was not set to Monocular." << endl;
 		exit(-1);
@@ -292,12 +288,12 @@ cv::Mat System::TrackMonocular(const cv::Mat &im, const double &timestamp, int n
 	// Check mode change
 	{
 		unique_lock<mutex> lock(mMutexMode);
-		if(mbActivateLocalizationMode)
+		if (mbActivateLocalizationMode)
 		{
 			pLocalMapper->RequestStop();
 
 			// Wait until Local Mapping has effectively stopped
-			while(!pLocalMapper->isStopped())
+			while (!pLocalMapper->isStopped())
 			{
 				usleep(1000);
 			}
@@ -305,7 +301,7 @@ cv::Mat System::TrackMonocular(const cv::Mat &im, const double &timestamp, int n
 			pTracker->InformOnlyTracking(true);
 			mbActivateLocalizationMode = false;
 		}
-		if(mbDeactivateLocalizationMode)
+		if (mbDeactivateLocalizationMode)
 		{
 			pTracker->InformOnlyTracking(false);
 			pLocalMapper->Release();
@@ -316,14 +312,14 @@ cv::Mat System::TrackMonocular(const cv::Mat &im, const double &timestamp, int n
 	// Check reset
 	{
 		unique_lock<mutex> lock(mMutexReset);
-		if(mbReset)
+		if (mbReset)
 		{
 			pTracker->Reset();
 			mbReset = false;
 		}
 	}
 
-	cv::Mat Tcw = pTracker->GrabImageMonocular(im,timestamp);
+	cv::Mat Tcw = pTracker->GrabImageMonocular(im, timestamp);
 
 	unique_lock<mutex> lock2(mMutexState);
 	mTrackingState = pTracker->mState;
@@ -363,25 +359,25 @@ void System::Shutdown()
 
 void System::SaveTrajectoryEuroC(const string &folder)
 {
-	cout << endl << "Saving camera trajectory to " << folder << " ..." << endl;
+	cout << endl
+		 << "Saving camera trajectory to " << folder << " ..." << endl;
 
 	std::vector<MapHolder *> vpHolder = mpMapDatabase->GetMapHolders();
-	for( MapHolder *pHolder : vpHolder)
+	for (MapHolder *pHolder : vpHolder)
 	{
 		Map *pMap = pHolder->pMap;
-		vector<KeyFrame*> vpKFs = pMap->GetAllKeyFrames();
-		sort(vpKFs.begin(),vpKFs.end(),KeyFrame::lId);
+		vector<KeyFrame *> vpKFs = pMap->GetAllKeyFrames();
+		sort(vpKFs.begin(), vpKFs.end(), KeyFrame::lId);
 
 		// Transform all keyframes so that the first keyframe is at the origin.
 		// After a loop closure the first keyframe might not be at the origin.
-		if( vpKFs.empty() )
+		if (vpKFs.empty())
 		{
 			std::cout << "No keyframes" << std::endl;
 			continue;
 		}
 
 		cv::Mat Two = vpKFs[0]->GetPoseInverse();
-
 
 		std::string filename = folder + "/Robot_" + std::to_string(pHolder->nAgentId) + "_Trajectory.txt";
 
@@ -396,68 +392,66 @@ void System::SaveTrajectoryEuroC(const string &folder)
 
 		// For each frame we have a reference keyframe (lRit), the timestamp (lT) and a flag
 		// which is true when tracking failed (lbL).
-		list<KeyFrame*>::iterator lRit = pTracker->mlpReferences.begin();
+		list<KeyFrame *>::iterator lRit = pTracker->mlpReferences.begin();
 		list<double>::iterator lT = pTracker->mlFrameTimes.begin();
 		list<bool>::iterator lbL = pTracker->mlbLost.begin();
-		for(list<cv::Mat>::iterator lit=pTracker->mlRelativeFramePoses.begin(),
-				lend=pTracker->mlRelativeFramePoses.end();lit!=lend;lit++, lRit++, lT++, lbL++)
+		for (list<cv::Mat>::iterator lit = pTracker->mlRelativeFramePoses.begin(),
+									 lend = pTracker->mlRelativeFramePoses.end();
+			 lit != lend; lit++, lRit++, lT++, lbL++)
 		{
-			if(*lbL)
+			if (*lbL)
 				continue;
 
-			KeyFrame* pKF = *lRit;
+			KeyFrame *pKF = *lRit;
 
-			cv::Mat Trw = cv::Mat::eye(4,4,CV_32F);
+			cv::Mat Trw = cv::Mat::eye(4, 4, CV_32F);
 
 			// If the reference keyframe was culled, traverse the spanning tree to get a suitable keyframe.
-			while(pKF->isBad())
+			while (pKF->isBad())
 			{
-				Trw = Trw*pKF->mTcp;
+				Trw = Trw * pKF->mTcp;
 				pKF = pKF->GetParent();
 			}
 
-			Trw = Trw*pKF->GetPose()*Two;
+			Trw = Trw * pKF->GetPose() * Two;
 
-			cv::Mat Tcw = (*lit)*Trw;
-			cv::Mat Rwc = Tcw.rowRange(0,3).colRange(0,3).t();
-			cv::Mat twc = -Rwc*Tcw.rowRange(0,3).col(3);
+			cv::Mat Tcw = (*lit) * Trw;
+			cv::Mat Rwc = Tcw.rowRange(0, 3).colRange(0, 3).t();
+			cv::Mat twc = -Rwc * Tcw.rowRange(0, 3).col(3);
 
 			vector<float> q = Converter::toQuaternion(Rwc);
 
 			unsigned long t = round(*lT * 1e9);
 
-			f << t << " " <<  setprecision(9) << twc.at<float>(0) << " " << twc.at<float>(1) << " " << twc.at<float>(2) << " " << q[0] << " " << q[1] << " " << q[2] << " " << q[3] << endl;
+			f << t << " " << setprecision(9) << twc.at<float>(0) << " " << twc.at<float>(1) << " " << twc.at<float>(2) << " " << q[0] << " " << q[1] << " " << q[2] << " " << q[3] << endl;
 		}
 		f.close();
 
-
-
-		cout << endl << "trajectory saved!" << endl;
-
+		cout << endl
+			 << "trajectory saved!" << endl;
 	}
-
 }
 
 void System::SaveTrajectoryKITTI(const string &folder)
 {
-	cout << endl << "Saving camera trajectory to " << folder << " ..." << endl;
-	if(mSensor==MONOCULAR)
+	cout << endl
+		 << "Saving camera trajectory to " << folder << " ..." << endl;
+	if (mSensor == MONOCULAR)
 	{
 		cerr << "ERROR: SaveTrajectoryKITTI cannot be used for monocular." << endl;
 		return;
 	}
 
-
 	std::vector<MapHolder *> vpHolder = mpMapDatabase->GetMapHolders();
-	for( MapHolder *pHolder : vpHolder)
+	for (MapHolder *pHolder : vpHolder)
 	{
 		Map *pMap = pHolder->pMap;
 		Tracking *pTracker = pHolder->pTracker;
 
-		vector<KeyFrame*> vpKFs = pMap->GetAllKeyFrames();
-		sort(vpKFs.begin(),vpKFs.end(),KeyFrame::lId);
+		vector<KeyFrame *> vpKFs = pMap->GetAllKeyFrames();
+		sort(vpKFs.begin(), vpKFs.end(), KeyFrame::lId);
 
-		if( vpKFs.empty() )
+		if (vpKFs.empty())
 		{
 			std::cout << "No keyframes" << std::endl;
 			continue;
@@ -479,33 +473,32 @@ void System::SaveTrajectoryKITTI(const string &folder)
 
 		// For each frame we have a reference keyframe (lRit), the timestamp (lT) and a flag
 		// which is true when tracking failed (lbL).
-		list<KeyFrame*>::iterator lRit = pTracker->mlpReferences.begin();
+		list<KeyFrame *>::iterator lRit = pTracker->mlpReferences.begin();
 		list<double>::iterator lT = pTracker->mlFrameTimes.begin();
-		for(list<cv::Mat>::iterator lit=pTracker->mlRelativeFramePoses.begin(), lend=pTracker->mlRelativeFramePoses.end();lit!=lend;lit++, lRit++, lT++)
+		for (list<cv::Mat>::iterator lit = pTracker->mlRelativeFramePoses.begin(), lend = pTracker->mlRelativeFramePoses.end(); lit != lend; lit++, lRit++, lT++)
 		{
-			KeyFrame* pKF = *lRit;
+			KeyFrame *pKF = *lRit;
 
-			cv::Mat Trw = cv::Mat::eye(4,4,CV_32F);
+			cv::Mat Trw = cv::Mat::eye(4, 4, CV_32F);
 
-			while(pKF->isBad())
+			while (pKF->isBad())
 			{
 				//  cout << "bad parent" << endl;
-				Trw = Trw*pKF->mTcp;
+				Trw = Trw * pKF->mTcp;
 				pKF = pKF->GetParent();
 			}
 
-			Trw = Trw*pKF->GetPose()*Two;
+			Trw = Trw * pKF->GetPose() * Two;
 
-			cv::Mat Tcw = (*lit)*Trw;
-			cv::Mat Rwc = Tcw.rowRange(0,3).colRange(0,3).t();
-			cv::Mat twc = -Rwc*Tcw.rowRange(0,3).col(3);
+			cv::Mat Tcw = (*lit) * Trw;
+			cv::Mat Rwc = Tcw.rowRange(0, 3).colRange(0, 3).t();
+			cv::Mat twc = -Rwc * Tcw.rowRange(0, 3).col(3);
 
-			f << setprecision(9) << Rwc.at<float>(0,0) << " " << Rwc.at<float>(0,1)  << " " << Rwc.at<float>(0,2) << " "  << twc.at<float>(0) << " " <<
-					Rwc.at<float>(1,0) << " " << Rwc.at<float>(1,1)  << " " << Rwc.at<float>(1,2) << " "  << twc.at<float>(1) << " " <<
-					Rwc.at<float>(2,0) << " " << Rwc.at<float>(2,1)  << " " << Rwc.at<float>(2,2) << " "  << twc.at<float>(2) << endl;
+			f << setprecision(9) << Rwc.at<float>(0, 0) << " " << Rwc.at<float>(0, 1) << " " << Rwc.at<float>(0, 2) << " " << twc.at<float>(0) << " " << Rwc.at<float>(1, 0) << " " << Rwc.at<float>(1, 1) << " " << Rwc.at<float>(1, 2) << " " << twc.at<float>(1) << " " << Rwc.at<float>(2, 0) << " " << Rwc.at<float>(2, 1) << " " << Rwc.at<float>(2, 2) << " " << twc.at<float>(2) << endl;
 		}
 		f.close();
-		cout << endl << "trajectory saved!" << endl;
+		cout << endl
+			 << "trajectory saved!" << endl;
 	}
 }
 
@@ -515,10 +508,62 @@ int System::GetTrackingState()
 	return mTrackingState;
 }
 
+/*
+Current assumptions that I'll need to confirm:
+    - Each map is updated by the global bundle-adjust and thus sending
+    a client just their own map is sufficient
+		- 99% sure Andrew and I confirmed this
 
 
+Methods:
+    Serialize()
+
+    send_data(): System::SaveTrajectoryEuroC could provide some inspiration
+        for each map/client:
+            - call GetAllKeyFrames(), GetAllMapPoints(), and GetReferenceMapPoints() on the map object
+                - Keyframes have mvpMapPoints, which is a vector of map-points associated with a keypoint
+            - call (?) on the map object to get the current pose
+                - Keyframes have a GetPose() method
+            - Do (?) to get color
+            - serialize data into protobuf
+                - Alternatively, can I take advantage of encoder.encodeImageStereo(...)?
+                - Can I intercept bitstream_pub.publish(msg)?
+            - Call GetMapId() on map object and send that to stdout or tcp
+            - Send data to stdout or tcp
+            - Profit?
 
 
+ */
 
+// Serialize nAgentId's data to stdout
+void System::SerializeData(int nAgentId, cv::Mat Tcw)
+{
+	Map *pMap = mpMapDatabase->GetMapHolderByAgentId(nAgentId)->pMap;
+	vector<KeyFrame *> keyframes = pMap->GetAllKeyFrames();
+	vector<MapPoint *> mapPoints = pMap->GetAllMapPoints();
+	vector<MapPoint *> refMapPoints = pMap->GetReferenceMapPoints();
 
-} //namespace ORB_SLAM
+	std::cout << "Keyframes" << std::endl;
+	// keyframe registration
+	for (KeyFrame *k : keyframes)
+	{
+		auto id = k->mnId;		  // this could be wrong
+		auto pose = k->GetPose(); // this should be correct
+	}
+
+	std::cout << "Edges" << std::endl;
+	// ???
+	// Something with graph registration and covisibility graphs, per openvslam terminology
+
+	std::cout << "MapPoints (landmarks)" << std::endl;
+	for (MapPoint *mp : mapPoints)
+	{
+		if (mp->nObs < 4)
+			continue;
+		auto id = mp->mnId;			  // this could be wrong
+		auto pos = mp->GetWorldPos(); // **Verify that GetWorldPos() is equivalent to get_pos_in_world() from openvslam**
+		uint8_t bgr[] = {0, 0, 0};	// I have become the very thing I swore to destroy
+	}
+}
+
+} // namespace CORB_SLAM2
