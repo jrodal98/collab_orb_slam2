@@ -554,8 +554,8 @@ void System::SerializeData(int nAgentId, cv::Mat Tcw)
 		if (mp->nObs < 4)
 			continue;
 		auto id = mp->mnId;
-		auto pos = mp->GetWorldPos();								// **Verify that GetWorldPos() is equivalent to get_pos_in_world() from openvslam**
-		auto bgr_color = mp->GetReferenceKeyFrame()->bgr[mp->mnId]; // Should verify with Geordan that this logic works
+		auto pos = mp->GetWorldPos(); // **Verify that GetWorldPos() is equivalent to get_pos_in_world() from openvslam**
+		auto bgr_color = mp->bgr;	 // Should verify with Geordan that this logic works
 	}
 
 	std::cout << "Current Pose" << std::endl;
