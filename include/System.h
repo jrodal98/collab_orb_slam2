@@ -134,6 +134,7 @@ public:
 
 public:
     static unsigned int gnNumRobots;
+    cv::Mat img;
 
 private:
     // Input sensor

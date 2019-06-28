@@ -108,7 +108,7 @@ cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const
 			mbReset = false;
 		}
 	}
-
+	img = imLeft; // stores the colored input image for color extraction
 	cv::Mat Tcw = pTracker->GrabImageStereo(imLeft, imRight, timestamp);
 
 	unique_lock<mutex> lock2(mMutexState);
@@ -214,7 +214,7 @@ cv::Mat System::TrackRGBD(const cv::Mat &im, const cv::Mat &depthmap, const doub
 			mbReset = false;
 		}
 	}
-
+	img = im; // stores the colored input image for color extraction
 	cv::Mat Tcw = pTracker->GrabImageRGBD(im, depthmap, timestamp);
 
 	unique_lock<mutex> lock2(mMutexState);
@@ -267,7 +267,6 @@ cv::Mat System::TrackRGBDCompressed(const FrameInfo &info, const std::vector<cv:
 	}
 
 	cv::Mat Tcw = pTracker->GrabImageRGBDCompressed(info, keypoints, descriptors, visualWords, vfDepthValues, timestamp);
-
 	unique_lock<mutex> lock2(mMutexState);
 	mTrackingState = pTracker->mState;
 	SerializeData(nRobotId, Tcw);
@@ -319,6 +318,7 @@ cv::Mat System::TrackMonocular(const cv::Mat &im, const double &timestamp, int n
 		}
 	}
 
+	img = im; // stores the colored input image for color extraction
 	cv::Mat Tcw = pTracker->GrabImageMonocular(im, timestamp);
 
 	unique_lock<mutex> lock2(mMutexState);
@@ -520,15 +520,8 @@ Methods:
 
     send_data(): System::SaveTrajectoryEuroC could provide some inspiration
         for each map/client:
-            - call GetAllKeyFrames(), GetAllMapPoints(), and GetReferenceMapPoints() on the map object
-                - Keyframes have mvpMapPoints, which is a vector of map-points associated with a keypoint
-            - call (?) on the map object to get the current pose
-                - Keyframes have a GetPose() method
             - Do (?) to get color
             - serialize data into protobuf
-                - Alternatively, can I take advantage of encoder.encodeImageStereo(...)?
-                - Can I intercept bitstream_pub.publish(msg)?
-            - Call GetMapId() on map object and send that to stdout or tcp
             - Send data to stdout or tcp
             - Profit?
 
@@ -547,7 +540,7 @@ void System::SerializeData(int nAgentId, cv::Mat Tcw)
 	// keyframe registration
 	for (KeyFrame *k : keyframes)
 	{
-		auto id = k->mnId;		  // this could be wrong
+		auto id = k->mnId;
 		auto pose = k->GetPose(); // this should be correct
 	}
 
@@ -560,10 +553,13 @@ void System::SerializeData(int nAgentId, cv::Mat Tcw)
 	{
 		if (mp->nObs < 4)
 			continue;
-		auto id = mp->mnId;			  // this could be wrong
-		auto pos = mp->GetWorldPos(); // **Verify that GetWorldPos() is equivalent to get_pos_in_world() from openvslam**
-		uint8_t bgr[] = {0, 0, 0};	// I have become the very thing I swore to destroy
+		auto id = mp->mnId;
+		auto pos = mp->GetWorldPos();								// **Verify that GetWorldPos() is equivalent to get_pos_in_world() from openvslam**
+		auto bgr_color = mp->GetReferenceKeyFrame()->bgr[mp->mnId]; // Should verify with Geordan that this logic works
 	}
+
+	std::cout << "Current Pose" << std::endl;
+	Tcw;
 }
 
 } // namespace CORB_SLAM2
