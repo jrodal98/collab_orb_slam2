@@ -622,7 +622,10 @@ void System::SerializeData(int nAgentId, cv::Mat Tcw)
 	for (unsigned int i = 0; i < 16; i++)
 		pose_obj.add_pose(p[i]);
 	map.set_allocated_current_frame(&pose_obj);
-
+	/////////////////////////////////////////////////////////////////////////////////////////////////////
+	// Adding robot id
+	map.set_robot_id(nAgentId);
+	////////////////////////////////////////////////
 	std::string buffer;
 	map.SerializeToString(&buffer);
 
@@ -630,6 +633,7 @@ void System::SerializeData(int nAgentId, cv::Mat Tcw)
 	{
 		keyfrm_obj->clear_pose();
 	}
+
 	map.release_current_frame();
 	uint64_t n = buffer.length();
 
