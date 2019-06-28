@@ -1,0 +1,9 @@
+.vscode
+.git
+build
+dep
+*.so
+Thirdparty/DBoW2/build
+Thirdparty/g2o/build
+Thirdparty/Pangolin/build
+Thirdparty/featureCompression2

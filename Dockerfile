@@ -17,7 +17,22 @@ RUN set -x && \
     build-essential \
     cmake \
     cmake-gui \
-    libeigen3-dev 
+    libeigen3-dev && \
+    apt autoremove -y -qq && \
+    rm -rf /var/lib/apt/lists/*
+
+# protobuf
+WORKDIR /tmp
+RUN set -x && \
+    wget -O - https://github.com/google/protobuf/archive/v3.6.1.tar.gz | tar zxvf -&& \
+    cd protobuf-3.6.1 && \
+    ./autogen.sh && \
+    ./configure --prefix=/usr/local --enable-static=no && \
+    make -j${NUM_THREADS} && \
+    make install && \
+    cd /tmp && \
+    rm -rf *
+WORKDIR /
 COPY . collab_orb_slam2
 WORKDIR /collab_orb_slam2/
 RUN set -x && \

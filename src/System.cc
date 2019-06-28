@@ -28,6 +28,7 @@
 #include <thread>
 #include <pangolin/pangolin.h>
 #include <iomanip>
+#include "map_segment.pb.h"
 
 namespace CORB_SLAM2
 {
@@ -341,11 +342,6 @@ void System::DeactivateLocalizationMode()
 	mbDeactivateLocalizationMode = true;
 }
 
-bool System::MapChanged()
-{
-	return false;
-}
-
 void System::Reset()
 {
 	unique_lock<mutex> lock(mMutexReset);
@@ -508,58 +504,137 @@ int System::GetTrackingState()
 	return mTrackingState;
 }
 
-/*
-Current assumptions that I'll need to confirm:
-    - Each map is updated by the global bundle-adjust and thus sending
-    a client just their own map is sufficient
-		- 99% sure Andrew and I confirmed this
-
-
-Methods:
-    Serialize()
-
-    send_data(): System::SaveTrajectoryEuroC could provide some inspiration
-        for each map/client:
-            - Do (?) to get color
-            - serialize data into protobuf
-            - Send data to stdout or tcp
-            - Profit?
-
-
- */
-
 // Serialize nAgentId's data to stdout
 void System::SerializeData(int nAgentId, cv::Mat Tcw)
 {
+	/*
+	TODO:
+	Hashes for keyframe registration
+	Add removed keyframes
+	Hashes for landmark registration
+	Add removed points
+ */
+	map_segment::map map; // protobuf map
 	Map *pMap = mpMapDatabase->GetMapHolderByAgentId(nAgentId)->pMap;
 	vector<KeyFrame *> keyframes = pMap->GetAllKeyFrames();
 	vector<MapPoint *> mapPoints = pMap->GetAllMapPoints();
 	vector<MapPoint *> refMapPoints = pMap->GetReferenceMapPoints();
-
-	std::cout << "Keyframes" << std::endl;
+	//////////////////////////////////////////////////////////////////////////////////////////
 	// keyframe registration
+	std::list<map_segment::map_keyframe *> allocated_keyframes;
 	for (KeyFrame *k : keyframes)
 	{
 		auto id = k->mnId;
-		auto pose = k->GetPose(); // this should be correct
+		cv::Mat pose = k->GetPose();
+		auto keyfrm_obj = map.add_keyframes();
+		keyfrm_obj->set_id(id);
+
+		map_segment::map_Mat44 *pose_obj = new map_segment::map_Mat44();
+
+		uchar *p = pose.data;
+		for (unsigned int i = 0; i < 16; i++)
+			pose_obj->add_pose(p[i]);
+
+		keyfrm_obj->set_allocated_pose(pose_obj);
+		allocated_keyframes.push_front(keyfrm_obj);
+	}
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	//EDGES
+	for (KeyFrame *k : keyframes)
+	{
+		const unsigned int keyfrm_id = k->mnId;
+
+		// covisibility graph
+		auto covisibilities = k->GetVectorCovisibleKeyFrames();
+		if (!covisibilities.empty())
+		{
+			for (const auto covisibility : covisibilities)
+			{
+				if (covisibility->mnId < keyfrm_id || k->GetWeight(covisibility) > 100)
+				{
+					continue;
+				}
+
+				const auto edge_obj = map.add_edges();
+				edge_obj->set_id0(keyfrm_id);
+				edge_obj->set_id1(covisibility->mnId);
+			}
+		}
+
+		// spanning tree
+		auto spanning_parent = k->GetParent();
+		if (spanning_parent)
+		{
+			const auto edge_obj = map.add_edges();
+			edge_obj->set_id0(keyfrm_id);
+			edge_obj->set_id1(spanning_parent->mnId);
+		}
+
+		// loop edges
+		const auto loop_edges = k->GetLoopEdges();
+		for (const auto loop_edge : loop_edges)
+		{
+			if (loop_edge->mnId < keyfrm_id)
+			{
+				continue;
+			}
+			const auto edge_obj = map.add_edges();
+			edge_obj->set_id0(keyfrm_id);
+			edge_obj->set_id1(loop_edge->mnId);
+		}
 	}
 
-	std::cout << "Edges" << std::endl;
-	// ???
-	// Something with graph registration and covisibility graphs, per openvslam terminology
-
-	std::cout << "MapPoints (landmarks)" << std::endl;
+	///////////////////////////////////////////////////////////////////////////////////////////////
+	// LANDMARKS
 	for (MapPoint *mp : mapPoints)
 	{
 		if (mp->nObs < 4)
 			continue;
 		auto id = mp->mnId;
-		auto pos = mp->GetWorldPos(); // **Verify that GetWorldPos() is equivalent to get_pos_in_world() from openvslam**
-		auto bgr_color = mp->bgr;	 // Should verify with Geordan that this logic works
+		uchar *pos = mp->GetWorldPos().data;
+		auto bgr = mp->bgr;
+
+		auto landmark_obj = map.add_landmarks();
+		landmark_obj->set_id(id);
+		for (int i = 0; i < 3; i++)
+		{
+			landmark_obj->add_coords(pos[i]);
+		}
+		for (int i = 2; i > -1; i--)
+		{
+			landmark_obj->add_color(bgr.val[i]);
+		}
 	}
 
-	std::cout << "Current Pose" << std::endl;
-	Tcw;
+	//////////////////////////////////////////////////////////////////////////////////////////////////
+	// LOCAL LANDMARKS
+
+	for (MapPoint *mp : mapPoints)
+	{
+		map.add_local_landmarks(mp->mnId);
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////
+	// CURRENT CAMERA POSE
+
+	map_segment::map_Mat44 pose_obj;
+	uchar *p = Tcw.data;
+	for (unsigned int i = 0; i < 16; i++)
+		pose_obj.add_pose(p[i]);
+	map.set_allocated_current_frame(&pose_obj);
+
+	std::string buffer;
+	map.SerializeToString(&buffer);
+
+	for (const auto keyfrm_obj : allocated_keyframes)
+	{
+		keyfrm_obj->clear_pose();
+	}
+	map.release_current_frame();
+	uint64_t n = buffer.length();
+
+	std::cout << n;
+	std::cout << buffer;
 }
 
 } // namespace CORB_SLAM2

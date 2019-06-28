@@ -40,12 +40,21 @@ endif()
 find_package(Eigen3 3.1.0 REQUIRED)
 find_package(Pangolin REQUIRED)
 
+find_package(Protobuf REQUIRED)
+if(NOT PROTOBUF_PROTOC_EXECUTABLE)
+        message(FATAL_ERROR "Could not find protoc executable (PROTOBUF_PROTOC_EXECUTABLE)")
+    endif()
+protobuf_generate_cpp(MAP_PB_SOURCE MAP_PB_HEADER src/protobuf/map_segment.proto)
+set_source_files_properties(${MAP_PB_HEADER} ${MAP_PB_SOURCE} COMPILE_FLAGS -Wno-unused-variable)
+
 include_directories(
 ${PROJECT_SOURCE_DIR}
 ${PROJECT_SOURCE_DIR}/include
 ${EIGEN3_INCLUDE_DIR}
 ${Pangolin_INCLUDE_DIRS}
+${CMAKE_CURRENT_BINARY_DIR}
 )
+
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 
@@ -72,6 +81,7 @@ src/Viewer.cc
 src/MapDatabase.cc
 src/MapMerging.cc
 src/MultiAgentInfo.cc
+${MAP_PB_SOURCE}
 )
 
 find_package(Boost REQUIRED COMPONENTS filesystem system thread program_options)
