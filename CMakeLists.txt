@@ -37,8 +37,6 @@ if(NOT OpenCV_FOUND)
    endif()
 endif()
 
-
-
 find_package(Eigen3 3.1.0 REQUIRED)
 find_package(Pangolin REQUIRED)
 
@@ -83,6 +81,7 @@ src/Viewer.cc
 src/MapDatabase.cc
 src/MapMerging.cc
 src/MultiAgentInfo.cc
+${MAP_PB_SOURCE}
 )
 
 find_package(Boost REQUIRED COMPONENTS filesystem system thread program_options)
@@ -91,12 +90,8 @@ target_link_libraries(${PROJECT_NAME}
 ${OpenCV_LIBS}
 ${EIGEN3_LIBS}
 ${Pangolin_LIBRARIES}
+${PROTOBUF_LIBRARIES}
 ${PROJECT_SOURCE_DIR}/Thirdparty/DBoW2/lib/libDBoW2.so
 ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
 ${Boost_LIBRARIES}
-protobuf::libprotobuf
-protobuf::libprotoc
 )
-
-
-
