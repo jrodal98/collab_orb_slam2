@@ -85,8 +85,10 @@ void LoadImagesKittiMono(const std::string &strPathToSequence, std::vector<std::
 			vTimestamps.push_back(t);
 		}
 	}
-
+	//for kitti dataset
 	//std::string strPrefixLeft = strPathToSequence + "/image_0/";
+
+	//for scuba dataset
 	std::string strPrefixLeft = strPathToSequence + "/image_0/zscuba";
 
 	//const int nTimes = vTimestamps.size();
@@ -96,10 +98,12 @@ void LoadImagesKittiMono(const std::string &strPathToSequence, std::vector<std::
 	for(int i=0; i<nTimes; i++)
 	{
 		std::stringstream ss;
+		//kitti
 		//ss << std::setfill('0') << std::setw(6) << i;
+		//vstrImageLeft[i] = strPrefixLeft + ss.str() + ".png";
+		//scuba
 		ss << std::setfill('0') << std::setw(4) << (i+78);
 		vstrImageLeft[i] = strPrefixLeft + ss.str() + ".jpg";
-		//vstrImageLeft[i] = strPrefixLeft + ss.str() + ".png";
 	}
 }
 
@@ -213,17 +217,19 @@ int main(int argc, char **argv)
 	size_t nImages = vCam0.size();
 
 	// Setup encoder
+	//parameteres for kitti dataset
 	//int imgWidth = 1241;
 	//int imgHeight = 376;
+	
+	//parameters for scuba dataset
 	int imgWidth = 1280;
 	int imgHeight = 720;
+
 	int bufferSize = 1;
 	bool inter = true;
 	bool stereo = false;
 	bool depth = false;
-	std::cout << "HereHere " << std::endl;
 	LBFC2::FeatureCoder encoder(voc, codingModel,imgWidth, imgHeight, nLevels, 32, bufferSize, inter, stereo, depth, mFocalLength, mBaseline);
-    std::cout << "HereHere 2" << std::endl;
 
 	// Setup features
     mpORBextractorLeft = std::shared_ptr<CORB_SLAM2::ORBextractor>(new CORB_SLAM2::ORBextractor(nFeatures, fScaleFactor, nLevels, fIniThFAST, fMinThFAST));
