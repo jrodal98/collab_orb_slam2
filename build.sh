@@ -29,7 +29,6 @@ echo "Building Feature Compression"
 cd ../..
 git clone https://github.com/d-vo/featureCompression2
 cd featureCompression2
-git checkout RAL_RELEASE
 mkdir build
 mkdir install
 cd build
