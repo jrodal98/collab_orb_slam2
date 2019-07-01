@@ -248,6 +248,20 @@ cv::Mat Tracking::GrabImageStereoCompressed(const FrameInfo &info, const std::ve
 	return mCurrentFrame.mTcw.clone();
 }
 
+cv::Mat Tracking::GrabImageMonoCompressed(const FrameInfo &info, const std::vector<cv::KeyPoint> &keyPointsLeft,
+		const cv::Mat &descriptorLeft, const std::vector<unsigned int> &visualWords, const std::vector<cv::KeyPoint> &keyPointsRight, const cv::Mat &descriptorRight, const double &timestamp)
+{
+	mImGray = cv::Mat(info.mnHeight, info.mnWidth, CV_8U, cv::Scalar::all(0));
+	cv::Mat imGrayRight = mImGray;
+
+	long unsigned int nId = mpLocalMapper->GetNextFrameId(mnAgentId);
+	mCurrentFrame = Frame(nId, mnAgentId, info, keyPointsLeft, descriptorLeft, visualWords,timestamp,
+			mpORBextractorLeft,mpORBextractorRight,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth);
+
+	Track();
+
+	return mCurrentFrame.mTcw.clone();
+}
 
 cv::Mat Tracking::GrabImageRGBDCompressed(const FrameInfo &info, const std::vector<cv::KeyPoint> &keypoints,
 		const cv::Mat &descriptors, const std::vector<unsigned int> &visualWords,

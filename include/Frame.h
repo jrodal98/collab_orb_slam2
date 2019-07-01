@@ -71,6 +71,14 @@ public:
     			cv::Mat &K, cv::Mat &distCoef, const float &bf,
     			const float &thDepth);
 
+
+    // Constructor for mono remote SLAM.
+    Frame(long unsigned int nId, int nAgentId, const FrameInfo &info, const std::vector<cv::KeyPoint> &keyPointsLeft, const cv::Mat &descriptorLeft,
+        		const std::vector<unsigned int> &visualWords, const double &timeStamp, ORBextractor* extractorLeft,
+    			ORBextractor* extractorRight, ORBVocabulary* voc,
+    			cv::Mat &K, cv::Mat &distCoef, const float &bf,
+    			const float &thDepth);
+
     // Constructor for RGB-D remote SLAM.
     Frame(long unsigned int nId, int nAgentId, const FrameInfo &info, const std::vector<cv::KeyPoint> &keyPoints,
     		const cv::Mat &descriptors, const std::vector<unsigned int> &visualWords,

@@ -121,15 +121,13 @@ cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const
 	mTrackedKeyPointsUn = pTracker->mCurrentFrame.mvKeysUn;
 	return Tcw;
 }
-
-cv::Mat System::TrackStereoCompressed(const FrameInfo &info, const std::vector<cv::KeyPoint> &keyPointsLeft,
+cv::Mat System::TrackMonoCompressed(const FrameInfo &info, const std::vector<cv::KeyPoint> &keyPointsLeft,
 		const cv::Mat &descriptorLeft, const std::vector<unsigned int> &visualWords,
 		const std::vector<cv::KeyPoint> &keyPointsRight, const cv::Mat &descriptorRight,
 		const double &timestamp, int nRobotId)
 {
 	Tracking *pTracker = mpMapDatabase->GetMapHolderByAgentId(nRobotId)->pTracker;
 	LocalMapping *pMapper = mpMapDatabase->GetMapHolderByAgentId(nRobotId)->pLocalMapper;
-
 	// Check mode change
 	{
 		unique_lock<mutex> lock(mMutexMode);
@@ -153,7 +151,53 @@ cv::Mat System::TrackStereoCompressed(const FrameInfo &info, const std::vector<c
 			mbDeactivateLocalizationMode = false;
 		}
 	}
+	// Check reset
+	{
+		unique_lock<mutex> lock(mMutexReset);
+		if(mbReset)
+		{
+			pTracker->Reset();
+			mbReset = false;
+		}
+	}
 
+	cv::Mat Tcw = pTracker->GrabImageMonoCompressed(info, keyPointsLeft,descriptorLeft, visualWords,
+			keyPointsRight,descriptorRight,timestamp);
+
+	unique_lock<mutex> lock2(mMutexState);
+	mTrackingState = pTracker->mState;
+	return Tcw;
+}
+cv::Mat System::TrackStereoCompressed(const FrameInfo &info, const std::vector<cv::KeyPoint> &keyPointsLeft,
+		const cv::Mat &descriptorLeft, const std::vector<unsigned int> &visualWords,
+		const std::vector<cv::KeyPoint> &keyPointsRight, const cv::Mat &descriptorRight,
+		const double &timestamp, int nRobotId)
+{
+	Tracking *pTracker = mpMapDatabase->GetMapHolderByAgentId(nRobotId)->pTracker;
+	LocalMapping *pMapper = mpMapDatabase->GetMapHolderByAgentId(nRobotId)->pLocalMapper;
+	// Check mode change
+	{
+		unique_lock<mutex> lock(mMutexMode);
+		if(mbActivateLocalizationMode)
+		{
+			pMapper->RequestStop();
+
+			// Wait until Local Mapping has effectively stopped
+			while(!pMapper->isStopped())
+			{
+				usleep(1000);
+			}
+
+			pTracker->InformOnlyTracking(true);
+			mbActivateLocalizationMode = false;
+		}
+		if(mbDeactivateLocalizationMode)
+		{
+			pTracker->InformOnlyTracking(false);
+			pMapper->Release();
+			mbDeactivateLocalizationMode = false;
+		}
+	}
 	// Check reset
 	{
 		unique_lock<mutex> lock(mMutexReset);
@@ -171,7 +215,6 @@ cv::Mat System::TrackStereoCompressed(const FrameInfo &info, const std::vector<c
 	mTrackingState = pTracker->mState;
 	return Tcw;
 }
-
 
 
 

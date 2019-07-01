@@ -72,7 +72,9 @@ public:
     cv::Mat GrabImageStereoCompressed(const FrameInfo &info, const std::vector<cv::KeyPoint> &keyPointsLeft,
        		const cv::Mat &descriptorLeft, const std::vector<unsigned int> &visualWords,
        		const std::vector<cv::KeyPoint> &keyPointsRight, const cv::Mat &descriptorRight, const double &timestamp);
-
+    cv::Mat GrabImageMonoCompressed(const FrameInfo &info, const std::vector<cv::KeyPoint> &keyPointsLeft,
+       		const cv::Mat &descriptorLeft, const std::vector<unsigned int> &visualWords,
+       		const std::vector<cv::KeyPoint> &keyPointsRight, const cv::Mat &descriptorRight, const double &timestamp);
     cv::Mat GrabImageRGBDCompressed(const FrameInfo &info, const std::vector<cv::KeyPoint> &keyPoints,
        		const cv::Mat &descriptors, const std::vector<unsigned int> &visualWords,
        		const std::vector<float> &vDepthValues, const double &timestamp);
