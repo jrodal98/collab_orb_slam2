@@ -108,3 +108,24 @@ target_link_libraries(KittiAgentStereo
 ${LIBS}
 )
 
+### MONOCULAR ###
+
+## SERVER EXAMPLE ##
+rosbuild_add_executable(KittiServerMono
+${PROJECT_SOURCE_DIR}/src/compression/KittiServerMono.cpp
+)
+target_link_libraries(KittiServerMono
+${LIBS}
+
+)
+
+
+## CLIENT EXAMPLE ##
+rosbuild_add_executable(KittiAgentMono
+${PROJECT_SOURCE_DIR}/src/compression/KittiAgentMono.cpp
+)
+
+target_link_libraries(KittiAgentMono
+${LIBS}
+)
+
