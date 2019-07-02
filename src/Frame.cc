@@ -61,7 +61,7 @@ Frame::Frame(const Frame &frame)
         SetPose(frame.mTcw);
 }
 
-
+//stereo frame
 Frame::Frame(long unsigned int nId, int nRobotId, const cv::Mat &imLeft, const cv::Mat &imRight, const double &timeStamp, ORBextractor* extractorLeft, ORBextractor* extractorRight, ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth)
     :mpORBvocabulary(voc),mpORBextractorLeft(extractorLeft),mpORBextractorRight(extractorRight), mTimeStamp(timeStamp), mK(K.clone()),mDistCoef(distCoef.clone()), mbf(bf), mThDepth(thDepth),
      mpReferenceKF(static_cast<KeyFrame*>(NULL))
@@ -178,7 +178,7 @@ Frame::Frame(long unsigned int nId, int nRobotId, const cv::Mat &imGray, const c
     AssignFeaturesToGrid();
 }
 
-
+//frame for monocular
 Frame::Frame(long unsigned int nId, int nRobotId, const cv::Mat &imGray, const double &timeStamp,
 		ORBextractor* extractor,ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth)
     :mpORBvocabulary(voc),mpORBextractorLeft(extractor),mpORBextractorRight(static_cast<ORBextractor*>(NULL)),
@@ -236,8 +236,94 @@ Frame::Frame(long unsigned int nId, int nRobotId, const cv::Mat &imGray, const d
 
     AssignFeaturesToGrid();
 }
+//compressed mono
+Frame::Frame(long unsigned int nId, int nRobotId, const FrameInfo &info, const std::vector<cv::KeyPoint> &keyPointsLeft, const cv::Mat &descriptorLeft,
+		const std::vector<unsigned int> &visualWords,
+		const double &timeStamp, ORBextractor* extractorLeft,
+		ORBextractor* extractorRight, ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf,
+		const float &thDepth)
+	:mpORBvocabulary(voc),mpORBextractorLeft(extractorLeft),mpORBextractorRight(extractorRight), mTimeStamp(timeStamp),
+	 mK(K.clone()),mDistCoef(distCoef.clone()), mbf(bf), mThDepth(thDepth),
+	 mpReferenceKF(static_cast<KeyFrame*>(NULL))
+{
+	mnId=nId;
+	mnAgentId = nRobotId;
+
+	// Scale Level Info
+	mnScaleLevels = mpORBextractorLeft->GetLevels();
+	mfScaleFactor = mpORBextractorLeft->GetScaleFactor();
+	mfLogScaleFactor = log(mfScaleFactor);
+	mvScaleFactors = mpORBextractorLeft->GetScaleFactors();
+	mvInvScaleFactors = mpORBextractorLeft->GetInverseScaleFactors();
+	mvLevelSigma2 = mpORBextractorLeft->GetScaleSigmaSquares();
+	mvInvLevelSigma2 = mpORBextractorLeft->GetInverseScaleSigmaSquares();
 
 
+
+//	cv::Mat imLeft(info.mnHeight, info.mnWidth, CV_8U, cv::Scalar::all(0));
+//	cv::Mat imRight = imLeft;
+
+	// ORB extraction - only for scale space
+	mpORBextractorLeft->ComputeEmptyPyramid(info.mnHeight, info.mnWidth);
+
+
+	mvKeys = keyPointsLeft;
+
+	mDescriptors = descriptorLeft;
+
+	N = mvKeys.size();
+
+	if(mvKeys.empty())
+		return;
+
+	// Convert visual words
+	mBowVec.clear();
+	mFeatVec.clear();
+	for( unsigned int i_feature = 0; i_feature < visualWords.size(); i_feature++ )
+	{
+		const unsigned int &wordId = visualWords[i_feature];
+		DBoW2::WordValue v = mpORBvocabulary->getWordWeight(wordId);
+		DBoW2::NodeId nid = mpORBvocabulary->getParentNode(wordId, 4);
+
+		mBowVec.addWeight(wordId, v);
+		mFeatVec.addFeature(nid, i_feature);
+	}
+
+
+	mvKeysUn = mvKeys;
+
+
+	mvpMapPoints = vector<MapPoint*>(N,static_cast<MapPoint*>(NULL));
+	mvbOutlier = vector<bool>(N,false);
+
+
+	// This is done only for the first Frame (or after a change in the calibration)
+	if(mbInitialComputations)
+	{
+		mnMinX = 0.0f;
+		mnMaxX = info.mnWidth;
+		mnMinY = 0.0f;
+		mnMaxY = info.mnHeight;
+
+		mfGridElementWidthInv=static_cast<float>(FRAME_GRID_COLS)/(mnMaxX-mnMinX);
+		mfGridElementHeightInv=static_cast<float>(FRAME_GRID_ROWS)/(mnMaxY-mnMinY);
+
+		fx = K.at<float>(0,0);
+		fy = K.at<float>(1,1);
+		cx = K.at<float>(0,2);
+		cy = K.at<float>(1,2);
+		invfx = 1.0f/fx;
+		invfy = 1.0f/fy;
+
+		mbInitialComputations=false;
+	}
+
+	mb = mbf/fx;
+
+	AssignFeaturesToGrid();
+}
+
+//compressed stereo
 Frame::Frame(long unsigned int nId, int nRobotId, const FrameInfo &info, const std::vector<cv::KeyPoint> &keyPointsLeft, const cv::Mat &descriptorLeft,
 		const std::vector<unsigned int> &visualWords, const std::vector<cv::KeyPoint> &keyPointsRight,
 		const cv::Mat &descriptorRight,	const double &timeStamp, ORBextractor* extractorLeft,
