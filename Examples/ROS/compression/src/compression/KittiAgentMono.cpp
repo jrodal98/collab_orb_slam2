@@ -31,10 +31,7 @@
 #include "System.h"
 #include "feature_coder.h"
 
-
-
 namespace po = boost::program_options;
-
 
 std::shared_ptr<CORB_SLAM2::ORBextractor> mpORBextractorLeft;
 std::shared_ptr<CORB_SLAM2::ORBextractor> mpORBextractorRight;
@@ -46,37 +43,34 @@ int fIniThFAST;
 int fMinThFAST;
 cv::Mat K0;
 cv::Mat DistCoef0;
-cv::Mat M1l,M2l;
-cv::Mat M1r,M2r;
+cv::Mat M1l, M2l;
+cv::Mat M1r, M2r;
 float mBaseline;
 float mFocalLength;
 
-
-
 void ExtractORB(int flag, const cv::Mat &im, std::vector<cv::KeyPoint> &vKeys, cv::Mat &descriptors)
 {
-    if(flag==0)
-    {
-        (*mpORBextractorLeft)(im,cv::Mat(),vKeys,descriptors);
-    }
-    else
-    {
-        (*mpORBextractorRight)(im,cv::Mat(),vKeys,descriptors);
-    }
-
+	if (flag == 0)
+	{
+		(*mpORBextractorLeft)(im, cv::Mat(), vKeys, descriptors);
+	}
+	else
+	{
+		(*mpORBextractorRight)(im, cv::Mat(), vKeys, descriptors);
+	}
 }
 
 void LoadImagesKittiMono(const std::string &strPathToSequence, std::vector<std::string> &vstrImageLeft,
-		std::vector<double> &vTimestamps)
+						 std::vector<double> &vTimestamps)
 {
 	std::ifstream fTimes;
 	std::string strPathTimeFile = strPathToSequence + "/times.txt";
 	fTimes.open(strPathTimeFile.c_str());
-	while(!fTimes.eof())
+	while (!fTimes.eof())
 	{
 		std::string s;
-		getline(fTimes,s);
-		if(!s.empty())
+		getline(fTimes, s);
+		if (!s.empty())
 		{
 			std::stringstream ss;
 			ss << s;
@@ -92,21 +86,20 @@ void LoadImagesKittiMono(const std::string &strPathToSequence, std::vector<std::
 	std::string strPrefixLeft = strPathToSequence + "/image_0/zscuba";
 
 	//const int nTimes = vTimestamps.size();
-	const int nTimes = 1744-78;
+	const int nTimes = 1744 - 78;
 	vstrImageLeft.resize(nTimes);
 
-	for(int i=0; i<nTimes; i++)
+	for (int i = 0; i < nTimes; i++)
 	{
 		std::stringstream ss;
 		//kitti
 		//ss << std::setfill('0') << std::setw(6) << i;
 		//vstrImageLeft[i] = strPrefixLeft + ss.str() + ".png";
 		//scuba
-		ss << std::setfill('0') << std::setw(4) << (i+78);
+		ss << std::setfill('0') << std::setw(4) << (i + 78);
 		vstrImageLeft[i] = strPrefixLeft + ss.str() + ".jpg";
 	}
 }
-
 
 void loadSettings(const std::string &settingsFile)
 {
@@ -117,19 +110,19 @@ void loadSettings(const std::string &settingsFile)
 	float cx = fsSettings["Camera.cx"];
 	float cy = fsSettings["Camera.cy"];
 
-	K0 = cv::Mat::eye(3,3,CV_32F);
-	K0.at<float>(0,0) = fx;
-	K0.at<float>(1,1) = fy;
-	K0.at<float>(0,2) = cx;
-	K0.at<float>(1,2) = cy;
+	K0 = cv::Mat::eye(3, 3, CV_32F);
+	K0.at<float>(0, 0) = fx;
+	K0.at<float>(1, 1) = fy;
+	K0.at<float>(0, 2) = cx;
+	K0.at<float>(1, 2) = cy;
 
-	DistCoef0 = cv::Mat(4,1,CV_32F);
+	DistCoef0 = cv::Mat(4, 1, CV_32F);
 	DistCoef0.at<float>(0) = fsSettings["Camera.k1"];
 	DistCoef0.at<float>(1) = fsSettings["Camera.k2"];
 	DistCoef0.at<float>(2) = fsSettings["Camera.p1"];
 	DistCoef0.at<float>(3) = fsSettings["Camera.p2"];
 	const float k3 = fsSettings["Camera.k3"];
-	if(k3!=0)
+	if (k3 != 0)
 	{
 		DistCoef0.resize(5);
 		DistCoef0.at<float>(4) = k3;
@@ -139,18 +132,18 @@ void loadSettings(const std::string &settingsFile)
 	mBaseline = bf / fx;
 	mFocalLength = fx;
 
-	cout << endl << "Camera Parameters: " << endl;
-	cout << "- fx: " << fx << endl;
-	cout << "- fy: " << fy << endl;
-	cout << "- cx: " << cx << endl;
-	cout << "- cy: " << cy << endl;
-	cout << "- k1: " << DistCoef0.at<float>(0) << endl;
-	cout << "- k2: " << DistCoef0.at<float>(1) << endl;
-	if(DistCoef0.rows==5)
-		cout << "- k3: " << DistCoef0.at<float>(4) << endl;
-	cout << "- p1: " << DistCoef0.at<float>(2) << endl;
-	cout << "- p2: " << DistCoef0.at<float>(3) << endl;
-
+	std::cerr << endl
+			  << "Camera Parameters: " << endl;
+	std::cerr << "- fx: " << fx << endl;
+	std::cerr << "- fy: " << fy << endl;
+	std::cerr << "- cx: " << cx << endl;
+	std::cerr << "- cy: " << cy << endl;
+	std::cerr << "- k1: " << DistCoef0.at<float>(0) << endl;
+	std::cerr << "- k2: " << DistCoef0.at<float>(1) << endl;
+	if (DistCoef0.rows == 5)
+		std::cerr << "- k3: " << DistCoef0.at<float>(4) << endl;
+	std::cerr << "- p1: " << DistCoef0.at<float>(2) << endl;
+	std::cerr << "- p2: " << DistCoef0.at<float>(3) << endl;
 
 	// Load ORB parameters
 	nFeatures = fsSettings["ORBextractor.nFeatures"];
@@ -159,57 +152,43 @@ void loadSettings(const std::string &settingsFile)
 	fIniThFAST = fsSettings["ORBextractor.iniThFAST"];
 	fMinThFAST = fsSettings["ORBextractor.minThFAST"];
 
-
-	cout << endl  << "ORB Extractor Parameters: " << endl;
-	cout << "- Number of Features: " << nFeatures << endl;
-	cout << "- Scale Levels: " << nLevels << endl;
-	cout << "- Scale Factor: " << fScaleFactor << endl;
-	cout << "- Initial Fast Threshold: " << fIniThFAST << endl;
-	cout << "- Minimum Fast Threshold: " << fMinThFAST << endl;
+	std::cerr << endl
+			  << "ORB Extractor Parameters: " << endl;
+	std::cerr << "- Number of Features: " << nFeatures << endl;
+	std::cerr << "- Scale Levels: " << nLevels << endl;
+	std::cerr << "- Scale Factor: " << fScaleFactor << endl;
+	std::cerr << "- Initial Fast Threshold: " << fIniThFAST << endl;
+	std::cerr << "- Minimum Fast Threshold: " << fMinThFAST << endl;
 }
-
-
-
 
 int main(int argc, char **argv)
 {
 	po::options_description desc("Allowed options");
-	desc.add_options()
-						("help", "produce help message")
-						("voc,v", po::value<std::string>(), "Vocabulary path")
-						("input,i", po::value<std::string>(), "Image path")
-						("coding,c", po::value<std::string>(), "settings path")
-						("settings,s", po::value<std::string>(), "ORB SLAM settings path")
-						("robotid,r", po::value<int>(), "agent id");
-
+	desc.add_options()("help", "produce help message")("voc,v", po::value<std::string>(), "Vocabulary path")("input,i", po::value<std::string>(), "Image path")("coding,c", po::value<std::string>(), "settings path")("settings,s", po::value<std::string>(), "ORB SLAM settings path")("robotid,r", po::value<int>(), "agent id");
 
 	po::variables_map vm;
 	po::store(po::parse_command_line(argc, argv, desc), vm);
 	po::notify(vm);
 
-
 	// Load settings
 	std::string strSettingPath = vm["settings"].as<std::string>();
 	loadSettings(strSettingPath);
 
-
 	// Load vocabulary
 	std::string voc_path = vm["voc"].as<std::string>();
 	ORBVocabulary voc;
-	std::cout << "Loading vocabulary from " << voc_path << std::endl;
+	std::cerr << "Loading vocabulary from " << voc_path << std::endl;
 	voc.loadFromTextFile(voc_path);
-
 
 	// Load coding statistics
 	std::string settings_path = vm["coding"].as<std::string>();
-	std::cout << "Loading statistics from " << settings_path << std::endl;
+	std::cerr << "Loading statistics from " << settings_path << std::endl;
 	LBFC2::CodingStats codingModel;
-	codingModel.load(settings_path );
-
+	codingModel.load(settings_path);
 
 	// Load images
 	std::string image_path = vm["input"].as<std::string>();
-	std::cout << "Loading image list from " << image_path << std::endl;
+	std::cerr << "Loading image list from " << image_path << std::endl;
 	std::vector<double> vTimestamps;
 	std::vector<std::string> vCam0;
 	LoadImagesKittiMono(image_path, vCam0, vTimestamps);
@@ -220,7 +199,7 @@ int main(int argc, char **argv)
 	//parameteres for kitti dataset
 	//int imgWidth = 1241;
 	//int imgHeight = 376;
-	
+
 	//parameters for scuba dataset
 	int imgWidth = 1280;
 	int imgHeight = 720;
@@ -229,60 +208,54 @@ int main(int argc, char **argv)
 	bool inter = true;
 	bool stereo = false;
 	bool depth = false;
-	LBFC2::FeatureCoder encoder(voc, codingModel,imgWidth, imgHeight, nLevels, 32, bufferSize, inter, stereo, depth, mFocalLength, mBaseline);
+	LBFC2::FeatureCoder encoder(voc, codingModel, imgWidth, imgHeight, nLevels, 32, bufferSize, inter, stereo, depth, mFocalLength, mBaseline);
 
 	// Setup features
-    mpORBextractorLeft = std::shared_ptr<CORB_SLAM2::ORBextractor>(new CORB_SLAM2::ORBextractor(nFeatures, fScaleFactor, nLevels, fIniThFAST, fMinThFAST));
-    mpORBextractorRight = std::shared_ptr<CORB_SLAM2::ORBextractor>(new CORB_SLAM2::ORBextractor(nFeatures, fScaleFactor, nLevels, fIniThFAST, fMinThFAST));
+	mpORBextractorLeft = std::shared_ptr<CORB_SLAM2::ORBextractor>(new CORB_SLAM2::ORBextractor(nFeatures, fScaleFactor, nLevels, fIniThFAST, fMinThFAST));
+	mpORBextractorRight = std::shared_ptr<CORB_SLAM2::ORBextractor>(new CORB_SLAM2::ORBextractor(nFeatures, fScaleFactor, nLevels, fIniThFAST, fMinThFAST));
 
+	// Setup ROS
+	int nRobotId = vm["robotid"].as<int>();
+	std::string bitstreamTopic = "/featComp/bitstream" + std::to_string(nRobotId);
 
-    // Setup ROS
-    int nRobotId = vm["robotid"].as<int>();
-  	std::string bitstreamTopic = "/featComp/bitstream" + std::to_string(nRobotId);
+	std::string name = "agent" + std::to_string(nRobotId);
+	ros::init(argc, argv, name.c_str());
+	ros::NodeHandle n;
 
-  	std::string name = "agent" + std::to_string(nRobotId);
-  	ros::init(argc, argv, name.c_str());
-  	ros::NodeHandle n;
-
-  	ros::Publisher bitstream_pub = n.advertise<compression::msg_features>(bitstreamTopic, 1000, true);
-
-
+	ros::Publisher bitstream_pub = n.advertise<compression::msg_features>(bitstreamTopic, 1000, true);
 
 	std::vector<cv::Mat> vImgLeft;
-	for( size_t imgId = 0; imgId < nImages; imgId++ )
+	for (size_t imgId = 0; imgId < nImages; imgId++)
 	{
 		// Read left images from file
-		cv::Mat imLeftDist = cv::imread(vCam0[imgId],cv::IMREAD_GRAYSCALE);
-
+		cv::Mat imLeftDist = cv::imread(vCam0[imgId], cv::IMREAD_GRAYSCALE);
 
 		vImgLeft.push_back(imLeftDist);
 
-		if( imgId % 64 == 0)
-			std::cout << "Finished loading image " << imgId << std::endl;
+		if (imgId % 64 == 0)
+			std::cerr << "Finished loading image " << imgId << std::endl;
 	}
 
-    ros::Rate poll_rate(100);
-	
-	while(bitstream_pub.getNumSubscribers() == 0){
+	ros::Rate poll_rate(100);
+
+	while (bitstream_pub.getNumSubscribers() == 0)
+	{
 		poll_rate.sleep();
-		std::cout << "loop" << std::endl;
+		std::cerr << "loop" << std::endl;
 	}
 
-	std::cout << "Start" << std::endl;
+	std::cerr << "Start" << std::endl;
 
-
-
-	for( size_t imgId= 0; imgId < nImages; imgId++)
+	for (size_t imgId = 0; imgId < nImages; imgId++)
 	{
 		cv::Mat imLeftRect = vImgLeft[imgId];
-		
+
 		// Extract features
 		std::vector<cv::KeyPoint> keypointsLeft;
 		cv::Mat descriptorsLeft;
 
-
 		std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
-		std::thread threadLeft(ExtractORB,0,imLeftRect, std::ref(keypointsLeft), std::ref(descriptorsLeft));
+		std::thread threadLeft(ExtractORB, 0, imLeftRect, std::ref(keypointsLeft), std::ref(descriptorsLeft));
 		threadLeft.join();
 
 		std::vector<uchar> bitstream;
@@ -294,26 +267,25 @@ int main(int argc, char **argv)
 		msg.header.stamp = ros::Time::now();
 		msg.tframe = tframe;
 		msg.nrobotid = nRobotId;
-		msg.data.assign(bitstream.begin(),bitstream.end());
+		msg.data.assign(bitstream.begin(), bitstream.end());
 		bitstream_pub.publish(msg);
 
 		ros::spinOnce();
 
 		std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
 
-        double ttrack= std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1).count();
-        //vTimestamps[imgId]=ttrack;
+		double ttrack = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1).count();
+		//vTimestamps[imgId]=ttrack;
 
-        // Wait to load the next frame
-		
-        //double T=0;
-        //if(imgId<nImages-1)
-            //T = vTimestamps[imgId+1]-tframe;
-        //else if(imgId>0)
-            //T = tframe-vTimestamps[imgId-1];
+		// Wait to load the next frame
 
-        //if(ttrack<T)
-        usleep((1)*1e6);
+		//double T=0;
+		//if(imgId<nImages-1)
+		//T = vTimestamps[imgId+1]-tframe;
+		//else if(imgId>0)
+		//T = tframe-vTimestamps[imgId-1];
 
+		//if(ttrack<T)
+		usleep((1) * 1e6);
 	}
 }

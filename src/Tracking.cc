@@ -476,7 +476,7 @@ void Tracking::Track()
 		{
 			if (mpMap->KeyFramesInMap() <= 5)
 			{
-				cout << "Track lost soon after initialisation, reseting..." << endl;
+				std::cerr << "Track lost soon after initialisation, reseting..." << endl;
 				mpSystem->Reset();
 				return;
 			}
@@ -546,7 +546,7 @@ void Tracking::StereoInitialization()
 			}
 		}
 
-		cout << "New map created with " << mpMap->MapPointsInMap() << " points" << endl;
+		std::cerr << "New map created with " << mpMap->MapPointsInMap() << " points" << endl;
 
 		mpLocalMapper->InsertKeyFrame(pKFini);
 
@@ -694,7 +694,7 @@ void Tracking::CreateInitialMapMonocular()
 	pKFcur->UpdateConnections();
 
 	// Bundle Adjustment
-	cout << "New Map created with " << mpMap->MapPointsInMap() << " points" << endl;
+	std::cerr << "New Map created with " << mpMap->MapPointsInMap() << " points" << endl;
 
 	Optimizer::GlobalBundleAdjustemnt(mpMap, 20);
 
@@ -704,7 +704,7 @@ void Tracking::CreateInitialMapMonocular()
 
 	if (medianDepth < 0 || pKFcur->TrackedMapPoints(1) < 100)
 	{
-		cout << "Wrong initialization, reseting..." << endl;
+		std::cerr << "Wrong initialization, reseting..." << endl;
 		Reset();
 		return;
 	}
@@ -816,7 +816,7 @@ bool Tracking::TrackReferenceKeyFrame()
 	double ttrack = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1).count();
 	mvtTrackReferenceKeyFrame.push_back(ttrack);
 
-	//	std::cout << "Track Reference: " << ttrack * 1000.0 << std::endl;
+	//	std::cerr << "Track Reference: " << ttrack * 1000.0 << std::endl;
 
 	return nmatchesMap >= 10;
 }
@@ -949,7 +949,7 @@ bool Tracking::TrackWithMotionModel()
 	double ttrack = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1).count();
 	mvtTrackWithMotionModel.push_back(ttrack);
 
-	//	std::cout << "Track Motion: " << ttrack * 1000.0 << std::endl;
+	//	std::cerr << "Track Motion: " << ttrack * 1000.0 << std::endl;
 
 	if (mbOnlyTracking)
 	{
@@ -1552,7 +1552,7 @@ bool Tracking::Relocalization()
 void Tracking::Reset()
 {
 
-	cout << "System Reseting" << endl;
+	std::cerr << "System Reseting" << endl;
 	if (mpViewer)
 	{
 		mpViewer->RequestStop();
@@ -1561,19 +1561,19 @@ void Tracking::Reset()
 	}
 
 	// Reset Local Mapping
-	cout << "Reseting Local Mapper...";
+	std::cerr << "Reseting Local Mapper...";
 	mpLocalMapper->RequestReset();
-	cout << " done" << endl;
+	std::cerr << " done" << endl;
 
 	// Reset Loop Closing
-	cout << "Reseting Loop Closing...";
+	std::cerr << "Reseting Loop Closing...";
 	mpLoopClosing->RequestReset();
-	cout << " done" << endl;
+	std::cerr << " done" << endl;
 
 	// Clear BoW Database
-	cout << "Reseting Database...";
+	std::cerr << "Reseting Database...";
 	mpKeyFrameDB->clear();
-	cout << " done" << endl;
+	std::cerr << " done" << endl;
 
 	// Clear Map (this erase MapPoints and KeyFrames)
 	mpMap->clear();

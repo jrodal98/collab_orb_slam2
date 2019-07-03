@@ -38,16 +38,16 @@ System::System(const string &strVocFile)
 	  mbDeactivateLocalizationMode(false)
 {
 	// Output welcome message
-	cout << endl
-		 << "ORB-SLAM2 Copyright (C) 2014-2016 Raul Mur-Artal, University of Zaragoza." << endl
-		 << "This program comes with ABSOLUTELY NO WARRANTY;" << endl
-		 << "This is free software, and you are welcome to redistribute it" << endl
-		 << "under certain conditions. See LICENSE.txt." << endl
-		 << endl;
+	std::cerr << endl
+			  << "ORB-SLAM2 Copyright (C) 2014-2016 Raul Mur-Artal, University of Zaragoza." << endl
+			  << "This program comes with ABSOLUTELY NO WARRANTY;" << endl
+			  << "This is free software, and you are welcome to redistribute it" << endl
+			  << "under certain conditions. See LICENSE.txt." << endl
+			  << endl;
 
 	//Load ORB Vocabulary
-	cout << endl
-		 << "Loading ORB Vocabulary. This could take a while..." << endl;
+	std::cerr << endl
+			  << "Loading ORB Vocabulary. This could take a while..." << endl;
 
 	mpVocabulary = new ORBVocabulary();
 	bool bVocLoad = mpVocabulary->loadFromTextFile(strVocFile);
@@ -57,8 +57,8 @@ System::System(const string &strVocFile)
 		cerr << "Falied to open at: " << strVocFile << endl;
 		exit(-1);
 	}
-	cout << "Vocabulary loaded!" << endl
-		 << endl;
+	std::cerr << "Vocabulary loaded!" << endl
+			  << endl;
 
 	// MULTI ROBOT
 	mpMapDatabase = new MapDatabase(this, mpVocabulary);
@@ -399,8 +399,8 @@ void System::Shutdown()
 
 void System::SaveTrajectoryEuroC(const string &folder)
 {
-	cout << endl
-		 << "Saving camera trajectory to " << folder << " ..." << endl;
+	std::cerr << endl
+			  << "Saving camera trajectory to " << folder << " ..." << endl;
 
 	std::vector<MapHolder *> vpHolder = mpMapDatabase->GetMapHolders();
 	for (MapHolder *pHolder : vpHolder)
@@ -413,7 +413,7 @@ void System::SaveTrajectoryEuroC(const string &folder)
 		// After a loop closure the first keyframe might not be at the origin.
 		if (vpKFs.empty())
 		{
-			std::cout << "No keyframes" << std::endl;
+			std::cerr << "No keyframes" << std::endl;
 			continue;
 		}
 
@@ -467,15 +467,15 @@ void System::SaveTrajectoryEuroC(const string &folder)
 		}
 		f.close();
 
-		cout << endl
-			 << "trajectory saved!" << endl;
+		std::cerr << endl
+				  << "trajectory saved!" << endl;
 	}
 }
 
 void System::SaveTrajectoryKITTI(const string &folder)
 {
-	cout << endl
-		 << "Saving camera trajectory to " << folder << " ..." << endl;
+	std::cerr << endl
+			  << "Saving camera trajectory to " << folder << " ..." << endl;
 	if (mSensor == MONOCULAR)
 	{
 		cerr << "ERROR: SaveTrajectoryKITTI cannot be used for monocular." << endl;
@@ -493,7 +493,7 @@ void System::SaveTrajectoryKITTI(const string &folder)
 
 		if (vpKFs.empty())
 		{
-			std::cout << "No keyframes" << std::endl;
+			std::cerr << "No keyframes" << std::endl;
 			continue;
 		}
 
@@ -523,7 +523,7 @@ void System::SaveTrajectoryKITTI(const string &folder)
 
 			while (pKF->isBad())
 			{
-				//  cout << "bad parent" << endl;
+				//  std::cerr << "bad parent" << endl;
 				Trw = Trw * pKF->mTcp;
 				pKF = pKF->GetParent();
 			}
@@ -537,8 +537,8 @@ void System::SaveTrajectoryKITTI(const string &folder)
 			f << setprecision(9) << Rwc.at<float>(0, 0) << " " << Rwc.at<float>(0, 1) << " " << Rwc.at<float>(0, 2) << " " << twc.at<float>(0) << " " << Rwc.at<float>(1, 0) << " " << Rwc.at<float>(1, 1) << " " << Rwc.at<float>(1, 2) << " " << twc.at<float>(1) << " " << Rwc.at<float>(2, 0) << " " << Rwc.at<float>(2, 1) << " " << Rwc.at<float>(2, 2) << " " << twc.at<float>(2) << endl;
 		}
 		f.close();
-		cout << endl
-			 << "trajectory saved!" << endl;
+		std::cerr << endl
+				  << "trajectory saved!" << endl;
 	}
 }
 
@@ -558,6 +558,7 @@ void System::SerializeData(int nAgentId, cv::Mat Tcw)
 	Hashes for landmark registration
 	Add removed points
  */
+	// std::cerr << "creating proto map" << std::endl;
 	map_segment::map map; // protobuf map
 	Map *pMap = mpMapDatabase->GetMapHolderByAgentId(nAgentId)->pMap;
 	vector<KeyFrame *> keyframes = pMap->GetAllKeyFrames();
@@ -565,6 +566,7 @@ void System::SerializeData(int nAgentId, cv::Mat Tcw)
 	vector<MapPoint *> refMapPoints = pMap->GetReferenceMapPoints();
 	//////////////////////////////////////////////////////////////////////////////////////////
 	// keyframe registration
+	// std::cerr << "keyframe registration" << std::endl;
 	std::list<map_segment::map_keyframe *> allocated_keyframes;
 	for (KeyFrame *k : keyframes)
 	{
@@ -575,7 +577,7 @@ void System::SerializeData(int nAgentId, cv::Mat Tcw)
 
 		map_segment::map_Mat44 *pose_obj = new map_segment::map_Mat44();
 
-		uchar *p = pose.data;
+		float *p = static_cast<float *>(static_cast<void *>(pose.data));
 		for (unsigned int i = 0; i < 16; i++)
 			pose_obj->add_pose(p[i]);
 
@@ -584,6 +586,7 @@ void System::SerializeData(int nAgentId, cv::Mat Tcw)
 	}
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	//EDGES
+	// std::cerr << "edge registration" << std::endl;
 	for (KeyFrame *k : keyframes)
 	{
 		const unsigned int keyfrm_id = k->mnId;
@@ -630,12 +633,13 @@ void System::SerializeData(int nAgentId, cv::Mat Tcw)
 
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	// LANDMARKS
+	// std::cerr << "map-point registration" << std::endl;
 	for (MapPoint *mp : mapPoints)
 	{
 		if (mp->nObs < 4)
 			continue;
 		auto id = mp->mnId;
-		uchar *pos = mp->GetWorldPos().data;
+		float *pos = static_cast<float *>(static_cast<void *>(mp->GetWorldPos().data));
 		auto bgr = mp->bgr;
 
 		auto landmark_obj = map.add_landmarks();
@@ -652,7 +656,7 @@ void System::SerializeData(int nAgentId, cv::Mat Tcw)
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 	// LOCAL LANDMARKS
-
+	// std::cerr << "local map-point registration" << std::endl;
 	for (MapPoint *mp : mapPoints)
 	{
 		map.add_local_landmarks(mp->mnId);
@@ -660,9 +664,9 @@ void System::SerializeData(int nAgentId, cv::Mat Tcw)
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	// CURRENT CAMERA POSE
-
+	// std::cerr << "current camera pose" << std::endl;
 	map_segment::map_Mat44 pose_obj;
-	uchar *p = Tcw.data;
+	float *p = static_cast<float *>(static_cast<void *>(Tcw.data));
 	for (unsigned int i = 0; i < 16; i++)
 		pose_obj.add_pose(p[i]);
 	map.set_allocated_current_frame(&pose_obj);
@@ -672,6 +676,7 @@ void System::SerializeData(int nAgentId, cv::Mat Tcw)
 	////////////////////////////////////////////////
 	std::string buffer;
 	map.SerializeToString(&buffer);
+	// map.SerializeToOstream(&std::cout);
 
 	for (const auto keyfrm_obj : allocated_keyframes)
 	{
@@ -679,10 +684,18 @@ void System::SerializeData(int nAgentId, cv::Mat Tcw)
 	}
 
 	map.release_current_frame();
-	uint64_t n = buffer.length();
 
-	std::cout << n;
-	std::cout << buffer;
+	uint64_t n = buffer.length();
+	if (write(1, &n, sizeof(uint64_t)) < 0)
+	{
+		perror("Error writing serialization size to stdout");
+		exit(0);
+	}
+	if (write(1, buffer.c_str(), n) < 0)
+	{
+		perror("Error writing serialization data to stdout");
+		exit(0);
+	}
 }
 
 } // namespace CORB_SLAM2

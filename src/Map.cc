@@ -25,32 +25,30 @@
 
 #include "Map.h"
 
-#include<mutex>
+#include <mutex>
 
 namespace CORB_SLAM2
 {
 
 Map::Map(int nMapId)
-: mnMapId(nMapId), mnMaxKFid(0),mnBigChangeIdx(0)
+	: mnMapId(nMapId), mnMaxKFid(0), mnBigChangeIdx(0)
 {
 	mnMaxRobotId = nMapId;
 	msnRobotIds.insert(nMapId);
 }
 
-
 void Map::AddMap(Map *pMap)
 {
-	vector<KeyFrame*> vSrcKeyFrames = pMap->GetAllKeyFrames();
-	vector<MapPoint*> vSrcMapPoints = pMap->GetAllMapPoints();
+	vector<KeyFrame *> vSrcKeyFrames = pMap->GetAllKeyFrames();
+	vector<MapPoint *> vSrcMapPoints = pMap->GetAllMapPoints();
 
-
-	for( KeyFrame *pKF : vSrcKeyFrames )
+	for (KeyFrame *pKF : vSrcKeyFrames)
 	{
 		pKF->UpdateMap(this);
 		AddKeyFrame(pKF);
 	}
 
-	for( MapPoint *pMapPoint : vSrcMapPoints )
+	for (MapPoint *pMapPoint : vSrcMapPoints)
 	{
 		pMapPoint->UpdateMap(this);
 		AddMapPoint(pMapPoint);
@@ -58,7 +56,7 @@ void Map::AddMap(Map *pMap)
 
 	msnRobotIds.insert(pMap->GetMapId());
 
-	if( pMap->GetMapId() > mnMaxRobotId )
+	if (pMap->GetMapId() > mnMaxRobotId)
 		mnMaxRobotId = pMap->GetMapId();
 }
 
@@ -67,17 +65,15 @@ int Map::GetMapId()
 	return mnMapId;
 }
 
-
-
 void Map::AddKeyFrame(KeyFrame *pKF)
 {
 	unique_lock<mutex> lock(mMutexMap);
-	if( mspKeyFrames.size() == 0)
+	if (mspKeyFrames.size() == 0)
 		pKF->SetFirst();
 
 	mspKeyFrames.insert(pKF);
-	if(pKF->mnId>mnMaxKFid)
-		mnMaxKFid=pKF->mnId;
+	if (pKF->mnId > mnMaxKFid)
+		mnMaxKFid = pKF->mnId;
 }
 
 void Map::AddMapPoint(MapPoint *pMP)
@@ -122,16 +118,16 @@ int Map::GetLastBigChangeIdx()
 	return mnBigChangeIdx;
 }
 
-vector<KeyFrame*> Map::GetAllKeyFrames()
+vector<KeyFrame *> Map::GetAllKeyFrames()
 {
 	unique_lock<mutex> lock(mMutexMap);
-	return vector<KeyFrame*>(mspKeyFrames.begin(),mspKeyFrames.end());
+	return vector<KeyFrame *>(mspKeyFrames.begin(), mspKeyFrames.end());
 }
 
-vector<MapPoint*> Map::GetAllMapPoints()
+vector<MapPoint *> Map::GetAllMapPoints()
 {
 	unique_lock<mutex> lock(mMutexMap);
-	return vector<MapPoint*>(mspMapPoints.begin(),mspMapPoints.end());
+	return vector<MapPoint *>(mspMapPoints.begin(), mspMapPoints.end());
 }
 
 long unsigned int Map::MapPointsInMap()
@@ -146,7 +142,7 @@ long unsigned int Map::KeyFramesInMap()
 	return mspKeyFrames.size();
 }
 
-vector<MapPoint*> Map::GetReferenceMapPoints()
+vector<MapPoint *> Map::GetReferenceMapPoints()
 {
 	unique_lock<mutex> lock(mMutexMap);
 	return mvpReferenceMapPoints;
@@ -158,13 +154,12 @@ long unsigned int Map::GetMaxKFid()
 	return mnMaxKFid;
 }
 
-
 void Map::clear()
 {
-	for(set<MapPoint*>::iterator sit=mspMapPoints.begin(), send=mspMapPoints.end(); sit!=send; sit++)
+	for (set<MapPoint *>::iterator sit = mspMapPoints.begin(), send = mspMapPoints.end(); sit != send; sit++)
 		delete *sit;
 
-	for(set<KeyFrame*>::iterator sit=mspKeyFrames.begin(), send=mspKeyFrames.end(); sit!=send; sit++)
+	for (set<KeyFrame *>::iterator sit = mspKeyFrames.begin(), send = mspKeyFrames.end(); sit != send; sit++)
 		delete *sit;
 
 	mspMapPoints.clear();
@@ -173,7 +168,6 @@ void Map::clear()
 	mvpReferenceMapPoints.clear();
 	mvpKeyFrameOrigins.clear();
 }
-
 
 void Map::empty()
 {
@@ -189,40 +183,37 @@ int Map::GetMaxRobotId()
 	return mnMaxRobotId;
 }
 
-
-
 void Map::SanityCheck()
 {
 #ifdef DEBUG
-	vector<KeyFrame*> vpKeyFrames = GetAllKeyFrames();
-	vector<MapPoint*> vpMapPoints = GetAllMapPoints();
+	vector<KeyFrame *> vpKeyFrames = GetAllKeyFrames();
+	vector<MapPoint *> vpMapPoints = GetAllMapPoints();
 
-
-	if( vpKeyFrames.size() < 1 )
+	if (vpKeyFrames.size() < 1)
 		return;
 
 	std::set<long unsigned int> sKfIds;
-	for( KeyFrame *pKF : vpKeyFrames )
+	for (KeyFrame *pKF : vpKeyFrames)
 	{
-		if( pKF->isBad() )
+		if (pKF->isBad())
 			continue;
 
 		std::set<long unsigned int> sMapPointIds;
-		vector<MapPoint*> vpMapPointMatches = pKF->GetMapPointMatches();
-		for( int i = 0; i < (int) vpMapPointMatches.size(); i++)
+		vector<MapPoint *> vpMapPointMatches = pKF->GetMapPointMatches();
+		for (int i = 0; i < (int)vpMapPointMatches.size(); i++)
 		{
-			MapPoint* pMP = vpMapPointMatches[i];
-			if( pMP )
+			MapPoint *pMP = vpMapPointMatches[i];
+			if (pMP)
 			{
-				if( pMP->isBad() )
+				if (pMP->isBad())
 					continue;
 
 				int index = pMP->GetIndexInKeyFrame(pKF);
 
-				if( index != i )
-					std::cout << "Index: " << index << " " << i << std::endl;
+				if (index != i)
+					std::cerr << "Index: " << index << " " << i << std::endl;
 
-				assert( index == i );
+				assert(index == i);
 
 				// No duplicate matches
 				assert(sMapPointIds.count(pMP->mnId) == 0);
@@ -230,68 +221,62 @@ void Map::SanityCheck()
 			}
 		}
 
-
 		// No duplicate KF
 		assert(sKfIds.count(pKF->mnId) == 0);
 		sKfIds.insert(pKF->mnId);
 	}
 
 	std::set<long unsigned int> sMapPointIds;
-	for( MapPoint *pMP : vpMapPoints )
+	for (MapPoint *pMP : vpMapPoints)
 	{
-		if( pMP->isBad() )
+		if (pMP->isBad())
 			continue;
 
-		map<KeyFrame*, size_t> vObservations = pMP->GetObservations();
-		for( auto obs : vObservations )
+		map<KeyFrame *, size_t> vObservations = pMP->GetObservations();
+		for (auto obs : vObservations)
 		{
-			KeyFrame* pKF = obs.first;
+			KeyFrame *pKF = obs.first;
 			MapPoint *pCurrentMP = pKF->GetMapPoint(obs.second);
 
-			if( pKF->isBad() || pMP->isBad() || pCurrentMP->isBad() )
+			if (pKF->isBad() || pMP->isBad() || pCurrentMP->isBad())
 				continue;
 
 			assert(pCurrentMP == pMP);
 		}
 
-
-		assert( vObservations.size() > 0);
+		assert(vObservations.size() > 0);
 
 		//		// Check if reference keyframe is here
 		KeyFrame *pRefKF = pMP->GetReferenceKeyFrame();
 		assert(pRefKF);
-
 
 		// No duplicate KF
 		assert(sMapPointIds.count(pMP->mnId) == 0);
 		sMapPointIds.insert(pMP->mnId);
 	}
 
-	if( vpKeyFrames.empty() || vpMapPoints.empty() )
+	if (vpKeyFrames.empty() || vpMapPoints.empty())
 		return;
-
 
 	// Check essential graph
 	KeyFrame *pOriginKF = *(mvpKeyFrameOrigins.begin());
-	list<KeyFrame*> lpKFtoCheck;
+	list<KeyFrame *> lpKFtoCheck;
 	lpKFtoCheck.push_back(pOriginKF);
-
 
 	bool bOriginFound = false;
 	std::set<long unsigned int> sKfGrtaphIds;
-	while(!lpKFtoCheck.empty())
+	while (!lpKFtoCheck.empty())
 	{
-		KeyFrame* pKF = lpKFtoCheck.front();
+		KeyFrame *pKF = lpKFtoCheck.front();
 
-		const set<KeyFrame*> sChilds = pKF->GetChilds();
-		for(set<KeyFrame*>::const_iterator sit=sChilds.begin();sit!=sChilds.end();sit++)
+		const set<KeyFrame *> sChilds = pKF->GetChilds();
+		for (set<KeyFrame *>::const_iterator sit = sChilds.begin(); sit != sChilds.end(); sit++)
 		{
-			KeyFrame* pChild = *sit;
+			KeyFrame *pChild = *sit;
 			lpKFtoCheck.push_back(pChild);
 		}
 
-
-		if( (pKF->GetParent() == NULL) )
+		if ((pKF->GetParent() == NULL))
 		{
 			assert(!bOriginFound);
 			bOriginFound = true;
@@ -305,15 +290,12 @@ void Map::SanityCheck()
 	}
 
 	assert(sKfGrtaphIds.size() == sKfIds.size());
-	assert( bOriginFound );
+	assert(bOriginFound);
 
-	if( !bOriginFound )
-		std::cout << "Origin not found" << std::endl;
+	if (!bOriginFound)
+		std::cerr << "Origin not found" << std::endl;
 
 #endif
 }
 
-
-
-
-} //namespace ORB_SLAM
+} // namespace CORB_SLAM2
