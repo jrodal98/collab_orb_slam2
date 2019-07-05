@@ -557,13 +557,23 @@ void System::SerializeData(int nAgentId, cv::Mat Tcw)
 	Add removed keyframes
 	Hashes for landmark registration
 	Add removed points
+
+	Or another way:
+		keyframes and mappoints are stored in sets. I could store a pointer to a
+		previous set and then take a set difference.  Send everything in the set diff,
+		then set the previous set to the current set.
+
  */
 	// std::cerr << "creating proto map" << std::endl;
 	map_segment::map map; // protobuf map
 	Map *pMap = mpMapDatabase->GetMapHolderByAgentId(nAgentId)->pMap;
 	vector<KeyFrame *> keyframes = pMap->GetAllKeyFrames();
 	vector<MapPoint *> mapPoints = pMap->GetAllMapPoints();
-	vector<MapPoint *> refMapPoints = pMap->GetReferenceMapPoints();
+	int map_id = pMap->GetMapId();
+	// vector<MapPoint *> refMapPoints = pMap->GetReferenceMapPoints();
+	// std::cerr << "# of keyframes: " << keyframes.size() << std::endl;
+	// std::cerr << "# of mapPoints: " << mapPoints.size() << std::endl;
+	// std::cerr << "# of refMapPoints: " << refMapPoints.size() << std::endl;
 	//////////////////////////////////////////////////////////////////////////////////////////
 	// keyframe registration
 	// std::cerr << "keyframe registration" << std::endl;
@@ -574,6 +584,8 @@ void System::SerializeData(int nAgentId, cv::Mat Tcw)
 		cv::Mat pose = k->GetPose();
 		auto keyfrm_obj = map.add_keyframes();
 		keyfrm_obj->set_id(id);
+		keyfrm_obj->set_robot_id(nAgentId);
+		keyfrm_obj->set_map_id(map_id);
 
 		map_segment::map_Mat44 *pose_obj = new map_segment::map_Mat44();
 
@@ -605,6 +617,8 @@ void System::SerializeData(int nAgentId, cv::Mat Tcw)
 				const auto edge_obj = map.add_edges();
 				edge_obj->set_id0(keyfrm_id);
 				edge_obj->set_id1(covisibility->mnId);
+				edge_obj->set_robot_id(nAgentId);
+				edge_obj->set_map_id(map_id);
 			}
 		}
 
@@ -615,6 +629,8 @@ void System::SerializeData(int nAgentId, cv::Mat Tcw)
 			const auto edge_obj = map.add_edges();
 			edge_obj->set_id0(keyfrm_id);
 			edge_obj->set_id1(spanning_parent->mnId);
+			edge_obj->set_robot_id(nAgentId);
+			edge_obj->set_map_id(map_id);
 		}
 
 		// loop edges
@@ -628,6 +644,8 @@ void System::SerializeData(int nAgentId, cv::Mat Tcw)
 			const auto edge_obj = map.add_edges();
 			edge_obj->set_id0(keyfrm_id);
 			edge_obj->set_id1(loop_edge->mnId);
+			edge_obj->set_robot_id(nAgentId);
+			edge_obj->set_map_id(map_id);
 		}
 	}
 
@@ -644,6 +662,8 @@ void System::SerializeData(int nAgentId, cv::Mat Tcw)
 
 		auto landmark_obj = map.add_landmarks();
 		landmark_obj->set_id(id);
+		landmark_obj->set_map_id(map_id);
+
 		for (int i = 0; i < 3; i++)
 		{
 			landmark_obj->add_coords(pos[i]);
@@ -657,44 +677,34 @@ void System::SerializeData(int nAgentId, cv::Mat Tcw)
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 	// LOCAL LANDMARKS
 	// std::cerr << "local map-point registration" << std::endl;
-	for (MapPoint *mp : mapPoints)
-	{
-		map.add_local_landmarks(mp->mnId);
-	}
+	// for (MapPoint *mp : mapPoints)
+	// {
+	// 	map.add_local_landmarks(mp->mnId);
+	// }
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////
-	// CURRENT CAMERA POSE
-	// std::cerr << "current camera pose" << std::endl;
-	map_segment::map_Mat44 pose_obj;
-	float *p = static_cast<float *>(static_cast<void *>(Tcw.data));
-	for (unsigned int i = 0; i < 16; i++)
-		pose_obj.add_pose(p[i]);
-	map.set_allocated_current_frame(&pose_obj);
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Adding robot id
-	map.set_robot_id(nAgentId);
-	////////////////////////////////////////////////
 	std::string buffer;
 	map.SerializeToString(&buffer);
-	// map.SerializeToOstream(&std::cout);
 
 	for (const auto keyfrm_obj : allocated_keyframes)
 	{
 		keyfrm_obj->clear_pose();
 	}
 
-	map.release_current_frame();
-
 	uint64_t n = buffer.length();
-	if (write(1, &n, sizeof(uint64_t)) < 0)
+	std::cerr << "Buffer size: " << n << std::endl;
+	if (n > 0)
 	{
-		perror("Error writing serialization size to stdout");
-		exit(0);
-	}
-	if (write(1, buffer.c_str(), n) < 0)
-	{
-		perror("Error writing serialization data to stdout");
-		exit(0);
+		if (write(1, &n, sizeof(uint64_t)) < 0)
+		{
+			perror("Error writing serialization size to stdout");
+			exit(0);
+		}
+		if (write(1, buffer.c_str(), n) < 0)
+		{
+			perror("Error writing serialization data to stdout");
+			exit(0);
+		}
 	}
 }
 

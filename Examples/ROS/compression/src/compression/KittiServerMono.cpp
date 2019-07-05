@@ -51,8 +51,10 @@ int nlevels = 8;
 //int imgWidth = 1241;
 //int imgHeight = 376;
 
-int imgWidth = 1280;
-int imgHeight = 720;
+// int imgWidth = 1280;
+// int imgHeight = 720;
+int imgWidth = 1920;
+int imgHeight = 1080;
 
 std::map<int, std::mutex> mutexPool;
 std::map<int, std::thread> mThreadMap;
@@ -136,8 +138,8 @@ int main(int argc, char **argv)
 	std::string settings_path = vm["settings"].as<std::string>();
 	//const string &strSettingsFile1 = settings_path + "/KITTI00-02.yaml";
 	//const string &strSettingsFile2 = settings_path + "/KITTI04-12.yaml";
-	const string &strSettingsFile1 = settings_path + "/scuba.yaml";
-	const string &strSettingsFile2 = settings_path + "/scuba.yaml";
+	const string &strSettingsFile1 = settings_path + "/statue.yaml";
+	const string &strSettingsFile2 = settings_path + "/statue.yaml";
 	SLAM = new CORB_SLAM2::System(voc_path);
 	std::cerr << "Here" << std::endl;
 

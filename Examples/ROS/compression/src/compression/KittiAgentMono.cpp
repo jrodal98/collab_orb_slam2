@@ -83,10 +83,10 @@ void LoadImagesKittiMono(const std::string &strPathToSequence, std::vector<std::
 	//std::string strPrefixLeft = strPathToSequence + "/image_0/";
 
 	//for scuba dataset
-	std::string strPrefixLeft = strPathToSequence + "/image_0/zscuba";
+	std::string strPrefixLeft = strPathToSequence + "/img";
 
 	//const int nTimes = vTimestamps.size();
-	const int nTimes = 1744 - 78;
+	const int nTimes = 10426;
 	vstrImageLeft.resize(nTimes);
 
 	for (int i = 0; i < nTimes; i++)
@@ -96,7 +96,7 @@ void LoadImagesKittiMono(const std::string &strPathToSequence, std::vector<std::
 		//ss << std::setfill('0') << std::setw(6) << i;
 		//vstrImageLeft[i] = strPrefixLeft + ss.str() + ".png";
 		//scuba
-		ss << std::setfill('0') << std::setw(4) << (i + 78);
+		ss << std::setfill('0') << std::setw(5) << (i + 1);
 		vstrImageLeft[i] = strPrefixLeft + ss.str() + ".jpg";
 	}
 }
@@ -201,8 +201,12 @@ int main(int argc, char **argv)
 	//int imgHeight = 376;
 
 	//parameters for scuba dataset
-	int imgWidth = 1280;
-	int imgHeight = 720;
+	// int imgWidth = 1280;
+	// int imgHeight = 720;
+
+	//parameters for statue dataset
+	int imgWidth = 1920;
+	int imgHeight = 1080;
 
 	int bufferSize = 1;
 	bool inter = true;

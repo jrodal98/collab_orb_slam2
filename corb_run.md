@@ -64,7 +64,7 @@
 First, run this command to start the server.  You'll have to make sure to include the path to the dataset directory.
 
 ```bash
-docker run -it --rm --net=host -e DISPLAY=$DISPLAY -v /tmp/.X11-unix/:/tmp/.X11-unix:ro -v ~/orb_slam2/kitti/dataset/:/collab_orb_slam2/dataset collab_orb_slam2:latest
+docker run -it --rm --net=host -e DISPLAY=$DISPLAY -v /tmp/.X11-unix/:/tmp/.X11-unix:ro -v ~/orb_slam2/kitti/dataset/:/app/slam/server/dep/collab_orb_slam2/dataset -v ~/slam/test_movies/scuba/:/app/slam/server/dep/collab_orb_slam2/scuba corbslam-server:latest
 ```
 
 Next, within the container, run the following:
@@ -85,7 +85,7 @@ Wait a few seconds and then hit CTRL^C.  Then,run
 Start the agent
 
 ```bash
-docker run -it --rm --net=host -e DISPLAY=$DISPLAY -v /tmp/.X11-unix/:/tmp/.X11-unix:ro -v ~/orb_slam2/kitti/dataset/:/collab_orb_slam2/dataset collab_orb_slam2:latest
+docker run -it --rm --net=host -e DISPLAY=$DISPLAY -v /tmp/.X11-unix/:/tmp/.X11-unix:ro -v ~/orb_slam2/kitti/dataset/:/app/slam/server/dep/collab_orb_slam2/dataset -v ~/slam/test_movies/scuba/:/app/slam/server/dep/collab_orb_slam2/scuba corbslam-server:latest
 ```
 
 Run the following
@@ -100,7 +100,7 @@ source bs.sh
 Start the agent
 
 ```bash
-docker run -it --rm --net=host -e DISPLAY=$DISPLAY -v /tmp/.X11-unix/:/tmp/.X11-unix:ro -v ~/orb_slam2/kitti/dataset/:/collab_orb_slam2/dataset collab_orb_slam2:latest
+docker run -it --rm --net=host -e DISPLAY=$DISPLAY -v /tmp/.X11-unix/:/tmp/.X11-unix:ro -v ~/orb_slam2/kitti/dataset/:/app/slam/server/dep/collab_orb_slam2/dataset -v ~/slam/test_movies/scuba/:/app/slam/server/dep/collab_orb_slam2/scuba corbslam-server:latest
 ```
 
 Run the following
