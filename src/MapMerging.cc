@@ -107,7 +107,7 @@ void MapMerging::RequestStop()
 	unique_lock<mutex> lock2(mMutexLoopQueue);
 
 	mbStopRequested = true;
-	std::cerr << "Loop Closing Request Stop" << std::endl;
+	std::cerr << "Loop Closing Request Stop - MapMerging::RequestStop()" << std::endl;
 }
 
 bool MapMerging::Stop()

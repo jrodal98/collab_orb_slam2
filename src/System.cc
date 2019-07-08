@@ -571,9 +571,7 @@ void System::SerializeData(int nAgentId, cv::Mat Tcw)
 	vector<MapPoint *> mapPoints = pMap->GetAllMapPoints();
 	int map_id = pMap->GetMapId();
 	// vector<MapPoint *> refMapPoints = pMap->GetReferenceMapPoints();
-	// std::cerr << "# of keyframes: " << keyframes.size() << std::endl;
-	// std::cerr << "# of mapPoints: " << mapPoints.size() << std::endl;
-	// std::cerr << "# of refMapPoints: " << refMapPoints.size() << std::endl;
+
 	//////////////////////////////////////////////////////////////////////////////////////////
 	// keyframe registration
 	// std::cerr << "keyframe registration" << std::endl;
