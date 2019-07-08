@@ -39,7 +39,7 @@
 #include "Tracking.h"
 #include "KeyFrameDatabase.h"
 #include "MapDrawer.h"
-
+#include "map_segment.pb.h"
 #include <mutex>
 #include <thread>
 
@@ -632,6 +632,31 @@ void MapMerging::MergeMaps()
 	srcOrigin->AddParent(dstOrigin);
 
 	// Restart everything
+	std::cerr << "Sending map merge notification: " << std::endl;
+	map_segment::map map; // protobuf map
+	map_segment::map_merge_message merge_msg{};
+	merge_msg.set_src(srcMapId);
+	merge_msg.set_dest(dstMapId);
+	map.set_allocated_merge_ids(&merge_msg);
+	std::string buffer;
+	map.SerializeToString(&buffer);
+	map.release_merge_ids();
+
+	uint64_t n = buffer.length();
+	std::cerr << "Buffer size: " << n << std::endl;
+	if (n > 0)
+	{
+		if (write(1, &n, sizeof(uint64_t)) < 0)
+		{
+			perror("Error writing merge message to stdout");
+			exit(0);
+		}
+		if (write(1, buffer.c_str(), n) < 0)
+		{
+			perror("Error writing merge message to stdout");
+			exit(0);
+		}
+	}
 	for (MapHolder *pSrcMapHoldder : vpSrcMapHoldder)
 	{
 		pSrcMapHoldder->pLocalMapper->Release();

@@ -561,7 +561,8 @@ void System::SerializeData(int nAgentId, cv::Mat Tcw)
 	Or another way:
 		keyframes and mappoints are stored in sets. I could store a pointer to a
 		previous set and then take a set difference.  Send everything in the set diff,
-		then set the previous set to the current set.
+		then set the previous set to the current set.  I think I'll need an array indexed by map id to safely do this, or store
+		the information in the Map object.
 
  */
 	// std::cerr << "creating proto map" << std::endl;

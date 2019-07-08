@@ -29,7 +29,13 @@ message map {
         repeated double pose = 1;
     }
 
+    message merge_message {
+        uint32 src = 1;
+        uint32 dest = 2;
+    }
+
     repeated keyframe keyframes = 1;
     repeated edge edges = 2;
     repeated landmark landmarks = 3;
+    merge_message merge_ids = 4; 
 }
