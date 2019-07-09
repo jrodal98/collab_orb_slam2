@@ -210,11 +210,11 @@ int main(int argc, char **argv)
 	// Load images
 	std::string image_path = vm["input"].as<std::string>();
 	std::cout << "Loading image list from " << image_path << std::endl;
-	std::vector<double> vTimestamps;
-	std::vector<std::string> vCam0;
-	LoadImagesKittiMono(image_path, vCam0, vTimestamps);
+	//std::vector<double> vTimestamps;
+	//std::vector<std::string> vCam0;
+	//LoadImagesKittiMono(image_path, vCam0, vTimestamps);
 
-	size_t nImages = vCam0.size();
+	size_t nImages = 0;
 
 	// Setup encoder
 	//parameteres for kitti dataset
@@ -249,6 +249,19 @@ int main(int argc, char **argv)
 
 
 	std::vector<cv::Mat> vImgLeft;
+	bool success = true;
+	cv::VideoCapture cap = new cv::VideoCapture(image_path);
+	while(success){
+		cv::Mat frame;
+		success,frame = cap.read();
+		if(success){
+			nImages++;
+			vImgLeft.push_back(frame);
+		} else {
+			break;
+		}
+	}
+	/* 
 	for( size_t imgId = 0; imgId < nImages; imgId++ )
 	{
 		// Read left images from file
@@ -260,6 +273,7 @@ int main(int argc, char **argv)
 		if( imgId % 64 == 0)
 			std::cout << "Finished loading image " << imgId << std::endl;
 	}
+	*/
 
     ros::Rate poll_rate(100);
 	
