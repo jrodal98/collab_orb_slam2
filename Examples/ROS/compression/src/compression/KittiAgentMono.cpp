@@ -217,13 +217,19 @@ int main(int argc, char **argv)
 	size_t nImages = 0;
 
 	// Setup encoder
+	
 	//parameteres for kitti dataset
 	//int imgWidth = 1241;
 	//int imgHeight = 376;
 	
 	//parameters for scuba dataset
-	int imgWidth = 1280;
-	int imgHeight = 720;
+	//int imgWidth = 1280;
+	//int imgHeight = 720;
+
+	//parameters for office rug dataset
+	int imgWidth = 1920;
+	int imgHeight = 1080;
+
 
 	int bufferSize = 1;
 	bool inter = true;
@@ -275,7 +281,7 @@ int main(int argc, char **argv)
 	}
 	*/
 
-    ros::Rate poll_rate(100);
+    ros::Rate poll_rate(500);
 	
 	while(bitstream_pub.getNumSubscribers() == 0){
 		poll_rate.sleep();
