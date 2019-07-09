@@ -58,7 +58,7 @@ CMakeFiles/KittiServerMono.dir/src/compression/KittiServerMono.cpp.o
  ../../../../include/Tracking.h
  ../../../../include/Viewer.h
  ../msg_gen/cpp/include/compression/msg_features.h
- /home/anita/corbslam/collab_orb_slam2/Examples/ROS/compression/src/compression/KittiServerMono.cpp
+ /home/anita/collab/collab_orb_slam2/Examples/ROS/compression/src/compression/KittiServerMono.cpp
  /home/anita/corbslam/collab_orb_slam2/Thirdparty/Pangolin/build/src/include/pangolin/config.h
  /home/anita/corbslam/collab_orb_slam2/Thirdparty/Pangolin/include/pangolin/compat/type_traits.h
  /home/anita/corbslam/collab_orb_slam2/Thirdparty/Pangolin/include/pangolin/display/attach.h

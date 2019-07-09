@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/anita/corbslam/collab_orb_slam2/Examples/ROS/compression
+CMAKE_SOURCE_DIR = /home/anita/collab/collab_orb_slam2/Examples/ROS/compression
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/anita/corbslam/collab_orb_slam2/Examples/ROS/compression/build
+CMAKE_BINARY_DIR = /home/anita/collab/collab_orb_slam2/Examples/ROS/compression/build
 
 # Utility rule file for ROSBUILD_genmsg_py.
 
@@ -57,8 +57,8 @@ CMakeFiles/ROSBUILD_genmsg_py: ../src/compression/msg/__init__.py
 
 
 ../src/compression/msg/__init__.py: ../src/compression/msg/_msg_features.py
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/anita/corbslam/collab_orb_slam2/Examples/ROS/compression/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Generating ../src/compression/msg/__init__.py"
-	/opt/ros/melodic/share/rospy/rosbuild/scripts/genmsg_py.py --initpy /home/anita/corbslam/collab_orb_slam2/Examples/ROS/compression/msg/msg_features.msg
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/anita/collab/collab_orb_slam2/Examples/ROS/compression/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Generating ../src/compression/msg/__init__.py"
+	/opt/ros/melodic/share/rospy/rosbuild/scripts/genmsg_py.py --initpy /home/anita/collab/collab_orb_slam2/Examples/ROS/compression/msg/msg_features.msg
 
 ../src/compression/msg/_msg_features.py: ../msg/msg_features.msg
 ../src/compression/msg/_msg_features.py: /opt/ros/melodic/share/rospy/rosbuild/scripts/genmsg_py.py
@@ -84,8 +84,8 @@ CMakeFiles/ROSBUILD_genmsg_py: ../src/compression/msg/__init__.py
 ../src/compression/msg/_msg_features.py: /opt/ros/melodic/share/rosgraph_msgs/package.xml
 ../src/compression/msg/_msg_features.py: /opt/ros/melodic/share/xmlrpcpp/package.xml
 ../src/compression/msg/_msg_features.py: /opt/ros/melodic/share/roscpp/package.xml
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/anita/corbslam/collab_orb_slam2/Examples/ROS/compression/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Generating ../src/compression/msg/_msg_features.py"
-	/opt/ros/melodic/share/rospy/rosbuild/scripts/genmsg_py.py --noinitpy /home/anita/corbslam/collab_orb_slam2/Examples/ROS/compression/msg/msg_features.msg
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/anita/collab/collab_orb_slam2/Examples/ROS/compression/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Generating ../src/compression/msg/_msg_features.py"
+	/opt/ros/melodic/share/rospy/rosbuild/scripts/genmsg_py.py --noinitpy /home/anita/collab/collab_orb_slam2/Examples/ROS/compression/msg/msg_features.msg
 
 ROSBUILD_genmsg_py: CMakeFiles/ROSBUILD_genmsg_py
 ROSBUILD_genmsg_py: ../src/compression/msg/__init__.py
@@ -104,6 +104,6 @@ CMakeFiles/ROSBUILD_genmsg_py.dir/clean:
 .PHONY : CMakeFiles/ROSBUILD_genmsg_py.dir/clean
 
 CMakeFiles/ROSBUILD_genmsg_py.dir/depend:
-	cd /home/anita/corbslam/collab_orb_slam2/Examples/ROS/compression/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/anita/corbslam/collab_orb_slam2/Examples/ROS/compression /home/anita/corbslam/collab_orb_slam2/Examples/ROS/compression /home/anita/corbslam/collab_orb_slam2/Examples/ROS/compression/build /home/anita/corbslam/collab_orb_slam2/Examples/ROS/compression/build /home/anita/corbslam/collab_orb_slam2/Examples/ROS/compression/build/CMakeFiles/ROSBUILD_genmsg_py.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/anita/collab/collab_orb_slam2/Examples/ROS/compression/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/anita/collab/collab_orb_slam2/Examples/ROS/compression /home/anita/collab/collab_orb_slam2/Examples/ROS/compression /home/anita/collab/collab_orb_slam2/Examples/ROS/compression/build /home/anita/collab/collab_orb_slam2/Examples/ROS/compression/build /home/anita/collab/collab_orb_slam2/Examples/ROS/compression/build/CMakeFiles/ROSBUILD_genmsg_py.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/ROSBUILD_genmsg_py.dir/depend
 

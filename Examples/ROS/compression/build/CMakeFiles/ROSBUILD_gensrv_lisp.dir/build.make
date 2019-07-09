@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/anita/corbslam/collab_orb_slam2/Examples/ROS/compression
+CMAKE_SOURCE_DIR = /home/anita/collab/collab_orb_slam2/Examples/ROS/compression
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/anita/corbslam/collab_orb_slam2/Examples/ROS/compression/build
+CMAKE_BINARY_DIR = /home/anita/collab/collab_orb_slam2/Examples/ROS/compression/build
 
 # Utility rule file for ROSBUILD_gensrv_lisp.
 
@@ -67,6 +67,6 @@ CMakeFiles/ROSBUILD_gensrv_lisp.dir/clean:
 .PHONY : CMakeFiles/ROSBUILD_gensrv_lisp.dir/clean
 
 CMakeFiles/ROSBUILD_gensrv_lisp.dir/depend:
-	cd /home/anita/corbslam/collab_orb_slam2/Examples/ROS/compression/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/anita/corbslam/collab_orb_slam2/Examples/ROS/compression /home/anita/corbslam/collab_orb_slam2/Examples/ROS/compression /home/anita/corbslam/collab_orb_slam2/Examples/ROS/compression/build /home/anita/corbslam/collab_orb_slam2/Examples/ROS/compression/build /home/anita/corbslam/collab_orb_slam2/Examples/ROS/compression/build/CMakeFiles/ROSBUILD_gensrv_lisp.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/anita/collab/collab_orb_slam2/Examples/ROS/compression/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/anita/collab/collab_orb_slam2/Examples/ROS/compression /home/anita/collab/collab_orb_slam2/Examples/ROS/compression /home/anita/collab/collab_orb_slam2/Examples/ROS/compression/build /home/anita/collab/collab_orb_slam2/Examples/ROS/compression/build /home/anita/collab/collab_orb_slam2/Examples/ROS/compression/build/CMakeFiles/ROSBUILD_gensrv_lisp.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/ROSBUILD_gensrv_lisp.dir/depend
 

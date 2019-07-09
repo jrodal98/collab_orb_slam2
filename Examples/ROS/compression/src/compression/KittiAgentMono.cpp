@@ -256,10 +256,10 @@ int main(int argc, char **argv)
 
 	std::vector<cv::Mat> vImgLeft;
 	bool success = true;
-	cv::VideoCapture cap = new cv::VideoCapture(image_path);
+	cv::VideoCapture cap(image_path);
 	while(success){
 		cv::Mat frame;
-		success,frame = cap.read();
+		success = cap.read(frame);
 		if(success){
 			nImages++;
 			vImgLeft.push_back(frame);
