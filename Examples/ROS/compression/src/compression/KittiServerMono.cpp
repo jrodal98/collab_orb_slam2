@@ -143,7 +143,7 @@ int main(int argc, char **argv)
 	SLAM = new CORB_SLAM2::System(voc_path);
 	std::cerr << "Here" << std::endl;
 
-	bool bUseViewer = true;
+	bool bUseViewer = false;
 
 	// Call init robot prior to tracking.
 	SLAM->InitAgent(0, strSettingsFile1, CORB_SLAM2::Sensor::MONOCULAR, bUseViewer);

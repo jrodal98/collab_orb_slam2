@@ -133,7 +133,7 @@ int main(int argc, char **argv)
 	const string &strSettingsFile2 = settings_path + "/KITTI04-12.yaml";
 	SLAM = new CORB_SLAM2::System(voc_path);
 
-	bool bUseViewer = true;
+	bool bUseViewer = false;
 
 	// Call init robot prior to tracking.
 	SLAM->InitAgent(0, strSettingsFile1, CORB_SLAM2::Sensor::RGBD, bUseViewer);
