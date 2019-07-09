@@ -4,3 +4,8 @@ Thirdparty
 Vocabulary
 dep
 *.so
+Examples/ROS/compression/KittiAgent*
+Examples/ROS/compression/KittiServer*
+Examples/ROS/compression/msg_gen
+Examples/ROS/compression/src/compression/msg
+Examples/ROS/compression/src/compression/__init__.py
