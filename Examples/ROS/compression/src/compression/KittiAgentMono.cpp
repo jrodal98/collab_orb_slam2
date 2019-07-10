@@ -173,6 +173,7 @@ void loadSettings(const std::string &settingsFile)
 
 int main(int argc, char **argv)
 {
+	std::cout << "Loading Things" << std::endl;
 	po::options_description desc("Allowed options");
 	desc.add_options()
 						("help", "produce help message")
@@ -187,9 +188,10 @@ int main(int argc, char **argv)
 	po::store(po::parse_command_line(argc, argv, desc), vm);
 	po::notify(vm);
 
-
+	std::cout << "Loading Settings" << std::endl;
 	// Load settings
 	std::string strSettingPath = vm["settings"].as<std::string>();
+	std::cout << strSettingPath << std::endl;
 	loadSettings(strSettingPath);
 
 
@@ -209,12 +211,37 @@ int main(int argc, char **argv)
 
 	// Load images
 	std::string image_path = vm["input"].as<std::string>();
-	std::cout << "Loading image list from " << image_path << std::endl;
+	//std::cout << "Loading image list from " << image_path << std::endl;
 	//std::vector<double> vTimestamps;
 	//std::vector<std::string> vCam0;
 	//LoadImagesKittiMono(image_path, vCam0, vTimestamps);
 
 	size_t nImages = 0;
+
+	std::cout << "Loading Video from " << image_path << std::endl;
+
+	std::vector<cv::Mat> vImgLeft;
+	bool success = true;
+	int frameskips = 5;
+	cv::VideoCapture cap(image_path);
+	while(success){
+		if(nImages % 64 == 0){
+			std::cout << "Loading Image " << nImages << std::endl;
+		}
+		cv::Mat frame;
+		success = cap.read(frame);
+		if(success){
+			nImages++;
+			if(nImages % frameskips == 0){
+				vImgLeft.push_back(frame);
+			}
+		} else {
+			std::cout << "End of file" << std::endl;
+			break;
+		}
+	}
+	nImages = nImages/5;
+	std::cout << "Done Loading Video" << std::endl;
 
 	// Setup encoder
 	
@@ -227,9 +254,12 @@ int main(int argc, char **argv)
 	//int imgHeight = 720;
 
 	//parameters for office rug dataset
-	int imgWidth = 1920;
-	int imgHeight = 1080;
+	//int imgWidth = 1920;
+	//int imgHeight = 1080;
 
+	//no hardcoded parameters
+	int imgWidth = vImgLeft[0].size().width;
+	int imgHeight = vImgLeft[0].size().width;
 
 	int bufferSize = 1;
 	bool inter = true;
@@ -253,20 +283,7 @@ int main(int argc, char **argv)
   	ros::Publisher bitstream_pub = n.advertise<compression::msg_features>(bitstreamTopic, 1000, true);
 
 
-
-	std::vector<cv::Mat> vImgLeft;
-	bool success = true;
-	cv::VideoCapture cap(image_path);
-	while(success){
-		cv::Mat frame;
-		success = cap.read(frame);
-		if(success){
-			nImages++;
-			vImgLeft.push_back(frame);
-		} else {
-			break;
-		}
-	}
+	
 	/* 
 	for( size_t imgId = 0; imgId < nImages; imgId++ )
 	{

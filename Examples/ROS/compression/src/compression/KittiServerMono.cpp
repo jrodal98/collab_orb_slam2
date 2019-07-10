@@ -167,10 +167,18 @@ int main(int argc, char **argv)
 
 	// Setup ORB SLAM - make sure to use the correct settings file
 	std::string settings_path = vm["settings"].as<std::string>();
+	//kitti data set
 	//const string &strSettingsFile1 = settings_path + "/KITTI00-02.yaml";
 	//const string &strSettingsFile2 = settings_path + "/KITTI04-12.yaml";
-	const string &strSettingsFile1 = settings_path + "/scuba.yaml";
-	const string &strSettingsFile2 = settings_path + "/scuba.yaml";
+
+	//scuba dataset
+	//const string &strSettingsFile1 = settings_path + "/scuba.yaml";
+	//const string &strSettingsFile2 = settings_path + "/scuba.yaml";
+
+	//office data set
+	const string &strSettingsFile1 = settings_path + "/office.yaml";
+	const string &strSettingsFile2 = settings_path + "/office.yaml";
+
 	SLAM = new CORB_SLAM2::System(voc_path);
 	std::cout << "Here" << std::endl;
 
