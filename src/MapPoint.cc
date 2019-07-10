@@ -38,8 +38,10 @@ MapPoint::MapPoint(long unsigned int nId, int nRobotId, const cv::Mat &Pos, KeyF
 {
     Pos.copyTo(mWorldPos);
     mNormalVector = cv::Mat::zeros(3, 1, CV_32F);
-    // bgr = pRefKF->bgr[idx];
-    bgr = cv::Vec3b(255, 255, 255);
+    if (!pRefKF->bgr.empty())
+        bgr = pRefKF->bgr[idx];
+    else
+        bgr = cv::Vec3b(255, 255, 255);
     mnId = nId;
     mnAgentId = nRobotId;
     mvAgentContext.resize(MultiAgentInfo::gnMaxRobotId + 1);

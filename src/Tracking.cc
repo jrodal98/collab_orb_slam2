@@ -522,7 +522,7 @@ void Tracking::StereoInitialization()
 
 		// Create KeyFrame
 		const long unsigned int nID = mpLocalMapper->GetNextKeyFrameId(mnAgentId);
-		KeyFrame *pKFini = new KeyFrame(nID, mCurrentFrame, mpMap, mpKeyFrameDB, mpSystem->img);
+		KeyFrame *pKFini = new KeyFrame(nID, mCurrentFrame, mpMap, mpKeyFrameDB, col_img);
 
 		// Insert KeyFrame in the map
 		mpMap->AddKeyFrame(pKFini);
@@ -650,8 +650,8 @@ void Tracking::CreateInitialMapMonocular()
 	// Create KeyFrames
 	const long unsigned int nID = mpLocalMapper->GetNextKeyFrameId(mnAgentId);
 	const long unsigned int nID2 = mpLocalMapper->GetNextKeyFrameId(mnAgentId);
-	KeyFrame *pKFini = new KeyFrame(nID, mInitialFrame, mpMap, mpKeyFrameDB, mpSystem->img);
-	KeyFrame *pKFcur = new KeyFrame(nID2, mCurrentFrame, mpMap, mpKeyFrameDB, mpSystem->img);
+	KeyFrame *pKFini = new KeyFrame(nID, mInitialFrame, mpMap, mpKeyFrameDB, col_img);
+	KeyFrame *pKFcur = new KeyFrame(nID2, mCurrentFrame, mpMap, mpKeyFrameDB, col_img);
 
 	pKFini->ComputeBoW();
 	pKFcur->ComputeBoW();
@@ -1111,7 +1111,7 @@ void Tracking::CreateNewKeyFrame()
 		return;
 
 	const long unsigned int nID = mpLocalMapper->GetNextKeyFrameId(mnAgentId);
-	KeyFrame *pKF = new KeyFrame(nID, mCurrentFrame, mpMap, mpKeyFrameDB, mpSystem->img);
+	KeyFrame *pKF = new KeyFrame(nID, mCurrentFrame, mpMap, mpKeyFrameDB, col_img);
 
 	// Associate MapPoints to the new keyframe and update normal and descriptor
 	const vector<MapPoint *> vpMapPointMatches = pKF->GetMapPointMatches();

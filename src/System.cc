@@ -109,7 +109,6 @@ cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const
 			mbReset = false;
 		}
 	}
-	img = imLeft; // stores the colored input image for color extraction
 	cv::Mat Tcw = pTracker->GrabImageStereo(imLeft, imRight, timestamp);
 
 	unique_lock<mutex> lock2(mMutexState);
@@ -169,10 +168,11 @@ cv::Mat System::TrackMonoCompressed(const FrameInfo &info, const std::vector<cv:
 cv::Mat System::TrackStereoCompressed(const FrameInfo &info, const std::vector<cv::KeyPoint> &keyPointsLeft,
 									  const cv::Mat &descriptorLeft, const std::vector<unsigned int> &visualWords,
 									  const std::vector<cv::KeyPoint> &keyPointsRight, const cv::Mat &descriptorRight,
-									  const double &timestamp, int nRobotId)
+									  const double &timestamp, int nRobotId, const cv::Mat &img)
 {
 	Tracking *pTracker = mpMapDatabase->GetMapHolderByAgentId(nRobotId)->pTracker;
 	LocalMapping *pMapper = mpMapDatabase->GetMapHolderByAgentId(nRobotId)->pLocalMapper;
+	pTracker->col_img = img.clone();
 	// Check mode change
 	{
 		unique_lock<mutex> lock(mMutexMode);
@@ -259,7 +259,6 @@ cv::Mat System::TrackRGBD(const cv::Mat &im, const cv::Mat &depthmap, const doub
 			mbReset = false;
 		}
 	}
-	img = im; // stores the colored input image for color extraction
 	cv::Mat Tcw = pTracker->GrabImageRGBD(im, depthmap, timestamp);
 
 	unique_lock<mutex> lock2(mMutexState);
@@ -363,7 +362,6 @@ cv::Mat System::TrackMonocular(const cv::Mat &im, const double &timestamp, int n
 		}
 	}
 
-	img = im; // stores the colored input image for color extraction
 	cv::Mat Tcw = pTracker->GrabImageMonocular(im, timestamp);
 
 	unique_lock<mutex> lock2(mMutexState);

@@ -67,16 +67,18 @@ void signal_handler(int signal)
 void trackStereo(CORB_SLAM2::System *SLAM, const CORB_SLAM2::FrameInfo &info, const std::vector<cv::KeyPoint> &keyPointsLeft,
 				 const cv::Mat &descriptorLeft, const std::vector<unsigned int> &visualWords,
 				 const std::vector<cv::KeyPoint> &keyPointsRight, const cv::Mat &descriptorRight,
-				 const double &timestamp, int nAgentId)
+				 const double &timestamp, int nAgentId, const cv::Mat &img)
 {
-	SLAM->TrackStereoCompressed(info, keyPointsLeft, descriptorLeft, visualWords, keyPointsRight, descriptorRight, timestamp, nAgentId);
+	SLAM->TrackStereoCompressed(info, keyPointsLeft, descriptorLeft, visualWords, keyPointsRight, descriptorRight, timestamp, nAgentId, img);
 }
 
 void callback(const compression::msg_features::ConstPtr msg, CORB_SLAM2::System *SLAM, std::map<int, LBFC2::FeatureCoder *> *coderMap)
 {
 	// Convert bitstream
 	std::vector<uchar> img_bitstream(msg->data.begin(), msg->data.end());
-
+	std::vector<uchar> img_vec(msg->img.begin(), msg->img.end());
+	// cv::Mat data_mat(img_vec, true);
+	cv::Mat img = cv::imdecode(img_vec, 1);
 	// Setup visual variables
 	std::vector<unsigned int> vDecVisualWords;
 	std::vector<cv::KeyPoint> vDecKeypointsLeft, vDecKeypointsRight;
@@ -106,7 +108,7 @@ void callback(const compression::msg_features::ConstPtr msg, CORB_SLAM2::System 
 	const double tframe = msg->tframe;
 
 	mThreadMap[nAgentId] = std::thread(&trackStereo, SLAM, info, vDecKeypointsLeft, decDescriptorsLeft, vDecVisualWords,
-									   vDecKeypointsRight, decDescriptorsRight, tframe, nAgentId);
+									   vDecKeypointsRight, decDescriptorsRight, tframe, nAgentId, img);
 }
 
 int main(int argc, char **argv)

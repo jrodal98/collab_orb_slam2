@@ -2,6 +2,8 @@
 .git
 build
 dep
+datasets
+test_movies
 *.so
 Thirdparty/DBoW2/build
 Thirdparty/g2o/build

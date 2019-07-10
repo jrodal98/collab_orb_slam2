@@ -266,11 +266,13 @@ int main(int argc, char **argv)
 		encoder.encodeImage(keypointsLeft, descriptorsLeft, bitstream);
 
 		//double tframe = vTimestamps[imgId];
+
 		double tframe = imgId;
 		compression::msg_features msg;
 		msg.header.stamp = ros::Time::now();
 		msg.tframe = tframe;
 		msg.nrobotid = nRobotId;
+		cv::imencode(".png", imLeftRect, msg.img);
 		msg.data.assign(bitstream.begin(), bitstream.end());
 		bitstream_pub.publish(msg);
 

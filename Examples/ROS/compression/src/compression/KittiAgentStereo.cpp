@@ -237,7 +237,6 @@ int main(int argc, char **argv)
 	{
 		cv::Mat imLeftRect = vImgLeft[imgId];
 		cv::Mat imRightRect = vImgRight[imgId];
-
 		// Extract features
 		std::vector<cv::KeyPoint> keypointsLeft, keypointsRight;
 		cv::Mat descriptorsLeft, descriptorsRight;
@@ -256,6 +255,7 @@ int main(int argc, char **argv)
 		msg.header.stamp = ros::Time::now();
 		msg.tframe = tframe;
 		msg.nrobotid = nRobotId;
+		cv::imencode(".png", imLeftRect, msg.img);
 		msg.data.assign(bitstream.begin(), bitstream.end());
 		bitstream_pub.publish(msg);
 
