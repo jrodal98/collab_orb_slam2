@@ -57,9 +57,11 @@ int nlevels = 8;
 //int imgWidth = 1241;
 //int imgHeight = 376;
 
-int imgWidth = 1280;
-int imgHeight = 720;
+//int imgWidth = 1280;
+//int imgHeight = 720;
 
+int imgWidth;
+int imgHeight;
 
 std::map<int, std::mutex> mutexPool;
 std::map<int, std::thread> mThreadMap;
@@ -178,6 +180,10 @@ int main(int argc, char **argv)
 	//office data set
 	const string &strSettingsFile1 = settings_path + "/office.yaml";
 	const string &strSettingsFile2 = settings_path + "/office.yaml";
+
+	cv::FileStorage fsSettings(settingsFile1, cv::FileStorage::READ);
+	imgHeight = fsSettings["Camera.height"];
+	imgWidth = fsSettings["Camera.width"];
 
 	SLAM = new CORB_SLAM2::System(voc_path);
 	std::cout << "Here" << std::endl;
