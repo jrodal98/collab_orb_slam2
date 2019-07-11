@@ -231,8 +231,8 @@ int main(int argc, char **argv)
 		cv::Mat frame;
 		success = cap.read(frame);
 		if(success){
-			nImages++;
 			if(nImages % frameskips == 0){
+				nImages++;
 				vImgLeft.push_back(frame);
 			}
 		} else {
