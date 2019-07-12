@@ -210,9 +210,9 @@ int main(int argc, char **argv)
 
 	// Setup ROS
 	int nRobotId = vm["robotid"].as<int>();
-	std::string bitstreamTopic = "/featComp/bitstream" + std::to_string(nRobotId);
+	// std::string bitstreamTopic = "/featComp/bitstream" + std::to_string(nRobotId);
 
-	std::string name = "agent" + std::to_string(nRobotId);
+	// std::string name = "agent" + std::to_string(nRobotId);
 	// ros::init(argc, argv, name.c_str());
 	// ros::NodeHandle n;
 

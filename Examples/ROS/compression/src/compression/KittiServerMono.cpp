@@ -33,6 +33,13 @@
 #include "System.h"
 #include "feature_coder.h"
 
+#include <stdio.h>
+#include <string.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 namespace po = boost::program_options;
 
 // Setup decoder
@@ -59,6 +66,10 @@ int imgHeight = 1080;
 std::map<int, std::mutex> mutexPool;
 std::map<int, std::thread> mThreadMap;
 
+bool bUseViewer = false;
+string strSettingsFile1;
+string strSettingsFile2;
+
 void signal_handler(int signal)
 {
 	//Save trajectory / stats etc.
@@ -76,6 +87,76 @@ void trackMono(CORB_SLAM2::System *SLAM, const CORB_SLAM2::FrameInfo &info, cons
 {
 	//SLAM->TrackMonoCompressed(info, keyPointsLeft, descriptorLeft, visualWords, keyPointsRight, descriptorRight, timestamp, nAgentId);
 	SLAM->TrackStereoCompressed(info, keyPointsLeft, descriptorLeft, visualWords, keyPointsRight, descriptorRight, timestamp, nAgentId, img);
+}
+
+bool read_data(int fd, std::vector<uchar> &data, std::vector<uchar> &img)
+{
+	uint64_t size;
+	if (read(fd, &size, sizeof(uint64_t)) < 0)
+	{
+		perror("Error reading encoded features buffer size from fifo pipe");
+		exit(0);
+	}
+	if (!size)
+		return false;
+	data.resize(size);
+	if (read(fd, &data[0], size) < 0)
+	{
+		perror("Error reading encoded features buffer size from fifo pipe");
+		exit(0);
+	}
+	if (read(fd, &size, sizeof(uint64_t)) < 0)
+	{
+		perror("Error reading encoded features buffer size from fifo pipe");
+		exit(0);
+	}
+	img.resize(size);
+	if (read(fd, &img[0], size) < 0)
+	{
+		perror("Error reading encoded features buffer size from fifo pipe");
+		exit(0);
+	}
+
+	return true;
+}
+
+void track(int robot_id, std::vector<uchar> &data, std::vector<uchar> &img_vec, CORB_SLAM2::System *SLAM, LBFC2::FeatureCoder *coder)
+{
+	cv::Mat img = cv::imdecode(img_vec, 1);
+	std::vector<unsigned int> vDecVisualWords;
+	std::vector<cv::KeyPoint> vDecKeypointsLeft, vDecKeypointsRight;
+	cv::Mat decDescriptorsLeft, decDescriptorsRight;
+
+	// Get frame info
+	CORB_SLAM2::FrameInfo info;
+	info.mnHeight = imgHeight;
+	info.mnWidth = imgWidth;
+
+	int nAgentId = robot_id;
+	coder->decodeImageStereo(data, vDecKeypointsLeft, decDescriptorsLeft, vDecKeypointsRight, decDescriptorsRight, vDecVisualWords);
+	const double tframe = 0.0; // the timeframe seems unnecessary right now, will have to actually do something about this if I'm incorrect
+	trackMono(SLAM, info, vDecKeypointsLeft, decDescriptorsLeft, vDecVisualWords,
+			  vDecKeypointsRight, decDescriptorsRight, tframe, nAgentId, img);
+}
+
+void handle_agent(int robot_id)
+{
+	std::cerr << "Handling robot " << robot_id << std::endl;
+	SLAM->InitAgent(robot_id, (robot_id == 0) ? strSettingsFile1 : strSettingsFile2, CORB_SLAM2::Sensor::STEREO, bUseViewer);
+	std::string myfifo = "/tmp/outpipe" + std::to_string(robot_id);
+	int fd = open(myfifo.c_str(), O_RDONLY);
+	LBFC2::FeatureCoder *coder = new LBFC2::FeatureCoder(voc, codingModel, imgWidth, imgHeight, nlevels, 32, bufferSize, inter, stereo, depth);
+	std::vector<uchar> data;
+	std::vector<uchar> img;
+	while (1)
+	{
+		if (!read_data(fd, data, img))
+			break;
+		track(robot_id, data, img, SLAM, coder);
+		data.clear();
+		img.clear();
+	}
+	close(fd);
 }
 
 void callback(const compression::msg_features::ConstPtr msg, CORB_SLAM2::System *SLAM, std::map<int, LBFC2::FeatureCoder *> *coderMap)
@@ -139,56 +220,31 @@ int main(int argc, char **argv)
 	std::string settings_path = vm["settings"].as<std::string>();
 	//const string &strSettingsFile1 = settings_path + "/KITTI00-02.yaml";
 	//const string &strSettingsFile2 = settings_path + "/KITTI04-12.yaml";
-	const string &strSettingsFile1 = settings_path + "/statue.yaml";
-	const string &strSettingsFile2 = settings_path + "/statue.yaml";
+	strSettingsFile1 = settings_path + "/statue.yaml";
+	strSettingsFile2 = settings_path + "/statue.yaml";
 	SLAM = new CORB_SLAM2::System(voc_path);
-	std::cerr << "Here" << std::endl;
 
-	bool bUseViewer = false;
-
-	// Call init robot prior to tracking.
-	SLAM->InitAgent(0, strSettingsFile1, CORB_SLAM2::Sensor::MONOCULAR, bUseViewer);
-	std::cerr << "Here 0.5" << std::endl;
-	SLAM->InitAgent(1, strSettingsFile2, CORB_SLAM2::Sensor::STEREO, bUseViewer);
-
-	std::cerr << "Here 1" << std::endl;
-	// Setup node
-	std::string name = "server";
-	ros::init(argc, argv, name.c_str());
-	ros::NodeHandle nh;
-	std::cerr << "Here2" << std::endl;
-
-	// Setup signal handler to store trajectory
 	signal(SIGINT, signal_handler);
-
-	std::cerr << "Here3" << std::endl;
 
 	std::map<int, LBFC2::FeatureCoder *> coderMap;
 	std::map<int, ros::Subscriber> subscriberMap;
 	std::map<int, std::thread> threadPool;
-	std::cerr << "Here4" << std::endl;
 
-	// Setup ros subscriber
-	std::vector<int> vnRobots = {0, 1};
-	for (size_t n = 0; n < vnRobots.size(); n++)
+	int robot_id = 0;
+	std::vector<std::thread> agents;
+	std::string input;
+	std::cin >> input;
+	while (input != "QUIT")
 	{
-		int nAgentId = vnRobots[n];
-
-		std::map<int, ros::Publisher> mFeedbackPub;
-		std::map<int, ros::Subscriber> mBitstreamSub;
-
-		std::string sRobotId = std::to_string(nAgentId);
-		std::string bitstreamRobot = "/featComp/bitstream" + sRobotId;
-		subscriberMap[nAgentId] = nh.subscribe<compression::msg_features>(bitstreamRobot, 10000, boost::bind(callback, _1, SLAM, &coderMap));
+		agents.push_back(std::thread(handle_agent, robot_id++));
+		std::cin >> input;
 	}
-	std::cerr << "Here5" << std::endl;
 
+	for (int i = 0; i < robot_id; i++)
+	{
+		agents[i].join();
+	}
 	// Lets spin
-	ros::MultiThreadedSpinner spinner(vnRobots.size());
-	spinner.spin();
-	std::cerr << "Here5.1" << std::endl;
-	ros::waitForShutdown();
-
 	std::cerr << "Finished" << std::endl;
 
 	signal_handler(0);
