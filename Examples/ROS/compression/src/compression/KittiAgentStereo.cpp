@@ -24,12 +24,17 @@
 */
 
 #include "boost/program_options.hpp"
-
 #include "ros/ros.h"
 #include "compression/msg_features.h"
-
 #include "System.h"
 #include "feature_coder.h"
+
+#include <stdio.h>
+#include <string.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 namespace po = boost::program_options;
 
@@ -208,10 +213,10 @@ int main(int argc, char **argv)
 	std::string bitstreamTopic = "/featComp/bitstream" + std::to_string(nRobotId);
 
 	std::string name = "agent" + std::to_string(nRobotId);
-	ros::init(argc, argv, name.c_str());
-	ros::NodeHandle n;
+	// ros::init(argc, argv, name.c_str());
+	// ros::NodeHandle n;
 
-	ros::Publisher bitstream_pub = n.advertise<compression::msg_features>(bitstreamTopic, 1000, true);
+	// ros::Publisher bitstream_pub = n.advertise<compression::msg_features>(bitstreamTopic, 1000, true);
 
 	std::vector<cv::Mat> vImgLeft, vImgRight;
 	for (size_t imgId = 0; imgId < nImages; imgId++)
@@ -227,12 +232,13 @@ int main(int argc, char **argv)
 			std::cerr << "Finished loading image " << imgId << std::endl;
 	}
 
-	ros::Rate poll_rate(100);
-	while (bitstream_pub.getNumSubscribers() == 0)
-		poll_rate.sleep();
+	// ros::Rate poll_rate(100);
+	// while (bitstream_pub.getNumSubscribers() == 0)
+	// 	poll_rate.sleep();
 
 	std::cerr << "Start" << std::endl;
-
+	std::string myfifo = "/tmp/outpipe" + std::to_string(nRobotId);
+	int fd = open(myfifo.c_str(), O_WRONLY);
 	for (size_t imgId = 0; imgId < nImages; imgId++)
 	{
 		cv::Mat imLeftRect = vImgLeft[imgId];
@@ -252,14 +258,39 @@ int main(int argc, char **argv)
 
 		double tframe = vTimestamps[imgId];
 		compression::msg_features msg;
-		msg.header.stamp = ros::Time::now();
+		// msg.header.stamp = ros::Time::now();
 		msg.tframe = tframe;
 		msg.nrobotid = nRobotId;
 		cv::imencode(".png", imLeftRect, msg.img);
 		msg.data.assign(bitstream.begin(), bitstream.end());
-		bitstream_pub.publish(msg);
+		// bitstream_pub.publish(msg);
 
-		ros::spinOnce();
+		uint64_t n = bitstream.size();
+		if (write(fd, &n, sizeof(uint64_t)) < 0)
+		{
+			perror("Error writing encoded features buffer size to fifo pipe");
+			exit(0);
+		}
+		// might need to do this (const char*)&bitstream[0]
+		if (write(fd, &bitstream[0], n) < 0)
+		{
+			perror("Error writing encoded features to fifo pipe");
+			exit(0);
+		}
+		n = msg.img.size();
+		if (write(fd, &n, sizeof(uint64_t)) < 0)
+		{
+			perror("Error writing image buffer size to fifo pipe");
+			exit(0);
+		}
+		// might need to do this (const char*)&msg.img[0]
+		if (write(fd, &msg.img[0], n) < 0)
+		{
+			perror("Error writing image buffer to fifo pipe");
+			exit(0);
+		}
+
+		// ros::spinOnce();
 
 		std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
 
@@ -277,4 +308,11 @@ int main(int argc, char **argv)
 		if (ttrack < T)
 			usleep((T - ttrack) * 1e6);
 	}
+	uint64_t n = 0;
+	if (write(fd, &n, sizeof(uint64_t)) < 0)
+	{
+		perror("Error writing finish signal to fifo pipe");
+		exit(0);
+	}
+	close(fd);
 }

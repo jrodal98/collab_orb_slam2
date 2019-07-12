@@ -33,13 +33,23 @@
 #include "System.h"
 #include "feature_coder.h"
 
+#include <stdio.h>
+#include <string.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 namespace po = boost::program_options;
 
 // Setup decoder
 ORBVocabulary voc;
 LBFC2::CodingStats codingModel;
 CORB_SLAM2::System *SLAM;
-ros::AsyncSpinner *spinner;
+bool bUseViewer = false;
+string strSettingsFile1;
+string strSettingsFile2;
+// ros::AsyncSpinner *spinner;
 
 // Adapt to agent
 int bufferSize = 1;
@@ -70,6 +80,76 @@ void trackStereo(CORB_SLAM2::System *SLAM, const CORB_SLAM2::FrameInfo &info, co
 				 const double &timestamp, int nAgentId, const cv::Mat &img)
 {
 	SLAM->TrackStereoCompressed(info, keyPointsLeft, descriptorLeft, visualWords, keyPointsRight, descriptorRight, timestamp, nAgentId, img);
+}
+
+bool read_data(int fd, std::vector<uchar> &data, std::vector<uchar> &img)
+{
+	uint64_t size;
+	if (read(fd, &size, sizeof(uint64_t)) < 0)
+	{
+		perror("Error reading encoded features buffer size from fifo pipe");
+		exit(0);
+	}
+	if (!size)
+		return false;
+	data.resize(size);
+	if (read(fd, &data[0], size) < 0)
+	{
+		perror("Error reading encoded features buffer size from fifo pipe");
+		exit(0);
+	}
+	if (read(fd, &size, sizeof(uint64_t)) < 0)
+	{
+		perror("Error reading encoded features buffer size from fifo pipe");
+		exit(0);
+	}
+	img.resize(size);
+	if (read(fd, &img[0], size) < 0)
+	{
+		perror("Error reading encoded features buffer size from fifo pipe");
+		exit(0);
+	}
+
+	return true;
+}
+
+void track(int robot_id, std::vector<uchar> &data, std::vector<uchar> &img_vec, CORB_SLAM2::System *SLAM, LBFC2::FeatureCoder *coder)
+{
+	cv::Mat img = cv::imdecode(img_vec, 1);
+	std::vector<unsigned int> vDecVisualWords;
+	std::vector<cv::KeyPoint> vDecKeypointsLeft, vDecKeypointsRight;
+	cv::Mat decDescriptorsLeft, decDescriptorsRight;
+
+	// Get frame info
+	CORB_SLAM2::FrameInfo info;
+	info.mnHeight = imgHeight;
+	info.mnWidth = imgWidth;
+
+	int nAgentId = robot_id;
+	coder->decodeImageStereo(data, vDecKeypointsLeft, decDescriptorsLeft, vDecKeypointsRight, decDescriptorsRight, vDecVisualWords);
+	const double tframe = 0.0; // the timeframe seems unnecessary right now, will have to actually do something about this if I'm incorrect
+	trackStereo(SLAM, info, vDecKeypointsLeft, decDescriptorsLeft, vDecVisualWords,
+				vDecKeypointsRight, decDescriptorsRight, tframe, nAgentId, img);
+}
+
+void handle_agent(int robot_id)
+{
+	std::cerr << "Handling robot " << robot_id << std::endl;
+	SLAM->InitAgent(robot_id, (robot_id == 0) ? strSettingsFile1 : strSettingsFile2, CORB_SLAM2::Sensor::STEREO, bUseViewer);
+	std::string myfifo = "/tmp/outpipe" + std::to_string(robot_id);
+	int fd = open(myfifo.c_str(), O_RDONLY);
+	LBFC2::FeatureCoder *coder = new LBFC2::FeatureCoder(voc, codingModel, imgWidth, imgHeight, nlevels, 32, bufferSize, inter, stereo, depth);
+	std::vector<uchar> data;
+	std::vector<uchar> img;
+	while (1)
+	{
+		if (!read_data(fd, data, img))
+			break;
+		track(robot_id, data, img, SLAM, coder);
+		data.clear();
+		img.clear();
+	}
+	close(fd);
 }
 
 void callback(const compression::msg_features::ConstPtr msg, CORB_SLAM2::System *SLAM, std::map<int, LBFC2::FeatureCoder *> *coderMap)
@@ -132,47 +212,64 @@ int main(int argc, char **argv)
 
 	// Setup ORB SLAM - make sure to use the correct settings file
 	std::string settings_path = vm["settings"].as<std::string>();
-	const string &strSettingsFile1 = settings_path + "/KITTI00-02.yaml";
-	const string &strSettingsFile2 = settings_path + "/KITTI04-12.yaml";
+	strSettingsFile2 = settings_path + "/KITTI04-12.yaml";
+	strSettingsFile1 = settings_path + "/KITTI00-02.yaml";
 	SLAM = new CORB_SLAM2::System(voc_path);
 
-	bool bUseViewer = false;
-
 	// Call init robot prior to tracking.
-	SLAM->InitAgent(0, strSettingsFile1, CORB_SLAM2::Sensor::STEREO, bUseViewer);
-	SLAM->InitAgent(1, strSettingsFile2, CORB_SLAM2::Sensor::STEREO, bUseViewer);
+	// SLAM->InitAgent(0, strSettingsFile1, CORB_SLAM2::Sensor::STEREO, bUseViewer);
+	// SLAM->InitAgent(1, strSettingsFile2, CORB_SLAM2::Sensor::STEREO, bUseViewer);
 
 	// Setup node
-	std::string name = "server";
-	ros::init(argc, argv, name.c_str());
-	ros::NodeHandle nh;
+	// std::string name = "server";
+	// ros::init(argc, argv, name.c_str());
+	// ros::NodeHandle nh;
 
 	// Setup signal handler to store trajectory
 	signal(SIGINT, signal_handler);
 
 	std::map<int, LBFC2::FeatureCoder *> coderMap;
-	std::map<int, ros::Subscriber> subscriberMap;
+	// std::map<int, ros::Subscriber> subscriberMap;
 	std::map<int, std::thread> threadPool;
 
 	// Setup ros subscriber
-	std::vector<int> vnRobots = {0, 1};
-	for (size_t n = 0; n < vnRobots.size(); n++)
+
+	// Wait for incoming robots here...
+	int robot_id = 0;
+	std::vector<std::thread> agents;
+	std::string input;
+	std::cin >> input;
+	while (input != "QUIT")
 	{
-		int nAgentId = vnRobots[n];
-
-		std::map<int, ros::Publisher> mFeedbackPub;
-		std::map<int, ros::Subscriber> mBitstreamSub;
-
-		std::string sRobotId = std::to_string(nAgentId);
-		std::string bitstreamRobot = "/featComp/bitstream" + sRobotId;
-		subscriberMap[nAgentId] = nh.subscribe<compression::msg_features>(bitstreamRobot, 10000, boost::bind(callback, _1, SLAM, &coderMap));
+		agents.push_back(std::thread(handle_agent, robot_id++));
+		std::cin >> input;
 	}
 
-	// Lets spin
-	ros::MultiThreadedSpinner spinner(vnRobots.size());
-	spinner.spin();
+	for (int i = 0; i < robot_id; i++)
+	{
+		agents[i].join();
+	}
 
-	ros::waitForShutdown();
+	// std::vector<int> vnRobots = {0, 1};
+	// for (size_t n = 0; n < vnRobots.size(); n++)
+	// {
+	// 	int nAgentId = vnRobots[n];
+
+	// 	std::map<int, ros::Publisher> mFeedbackPub;
+	// 	std::map<int, ros::Subscriber> mBitstreamSub;
+
+	// 	std::string sRobotId = std::to_string(nAgentId);
+	// 	std::string bitstreamRobot = "/featComp/bitstream" + sRobotId;
+	// 	subscriberMap[nAgentId] = nh.subscribe<compression::msg_features>(bitstreamRobot, 10000, boost::bind(callback, _1, SLAM, &coderMap));
+	// 	// I can probably emulate this by having one thread per robot that continuously checks for new data on its pipe.  Need to figure out how
+	// 	// to read the msgpack data off the pipe properly.
+	// }
+
+	// // Lets spin
+	// ros::MultiThreadedSpinner spinner(vnRobots.size());
+	// spinner.spin();
+
+	// ros::waitForShutdown();
 
 	std::cerr << "Finished" << std::endl;
 
