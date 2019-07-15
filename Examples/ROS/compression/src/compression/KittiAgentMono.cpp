@@ -231,8 +231,8 @@ int main(int argc, char **argv)
 		cv::Mat frame;
 		success = cap.read(frame);
 		if(success){
+			nImages++;
 			if(nImages % frameskips == 0){
-				nImages++;
 				vImgLeft.push_back(frame);
 			}
 		} else {
@@ -240,9 +240,8 @@ int main(int argc, char **argv)
 			break;
 		}
 	}
-	nImages = nImages/5;
 	std::cout << "Done Loading Video" << std::endl;
-
+	nImages = nImages/frameskips;
 	// Setup encoder
 	
 	//parameteres for kitti dataset
@@ -259,7 +258,7 @@ int main(int argc, char **argv)
 
 	//no hardcoded parameters
 	int imgWidth = vImgLeft[0].size().width;
-	int imgHeight = vImgLeft[0].size().width;
+	int imgHeight = vImgLeft[0].size().height;
 
 	int bufferSize = 1;
 	bool inter = true;

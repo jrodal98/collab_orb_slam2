@@ -28,16 +28,11 @@
 
 #include "boost/program_options.hpp"
 
-
 #include "ros/ros.h"
 #include "compression/msg_features.h"
 
 #include "System.h"
 #include "feature_coder.h"
-
-
-
-
 
 namespace po = boost::program_options;
 
