@@ -175,8 +175,8 @@ int main(int argc, char **argv)
 		cv::Mat frame;
 		success = cap.read(frame);
 		if(success){
-			imgWidth = vImgLeft[0].size().width;
-			imgHeight = vImgLeft[0].size().height;
+			imgWidth = frame.size().width;
+			imgHeight = frame.size().height;
 		}
 	}
 

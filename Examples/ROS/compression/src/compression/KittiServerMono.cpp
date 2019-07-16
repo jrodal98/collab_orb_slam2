@@ -176,7 +176,7 @@ int main(int argc, char **argv)
 	const string &strSettingsFile1 = settings_path + "/office.yaml";
 	const string &strSettingsFile2 = settings_path + "/office.yaml";
 
-	cv::FileStorage fsSettings(settingsFile1, cv::FileStorage::READ);
+	cv::FileStorage fsSettings(strSettingsFile1, cv::FileStorage::READ);
 	imgHeight = fsSettings["Camera.height"];
 	imgWidth = fsSettings["Camera.width"];
 
