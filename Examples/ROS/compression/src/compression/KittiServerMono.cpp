@@ -58,10 +58,11 @@ int nlevels = 8;
 //int imgWidth = 1241;
 //int imgHeight = 376;
 
-// int imgWidth = 1280;
-// int imgHeight = 720;
-int imgWidth = 1920;
-int imgHeight = 1080;
+//int imgWidth = 1280;
+//int imgHeight = 720;
+
+int imgWidth;
+int imgHeight;
 
 std::map<int, std::mutex> mutexPool;
 std::map<int, std::thread> mThreadMap;
@@ -159,44 +160,6 @@ void handle_agent(int robot_id)
 	close(fd);
 }
 
-void callback(const compression::msg_features::ConstPtr msg, CORB_SLAM2::System *SLAM, std::map<int, LBFC2::FeatureCoder *> *coderMap)
-{
-	// Convert bitstream
-	std::vector<uchar> img_bitstream(msg->data.begin(), msg->data.end());
-	std::vector<uchar> img_vec(msg->img.begin(), msg->img.end());
-	cv::Mat data_mat(img_vec, true);
-	cv::Mat img(cv::imdecode(data_mat, 1));
-	// Setup visual variables
-	std::vector<unsigned int> vDecVisualWords;
-	std::vector<cv::KeyPoint> vDecKeypointsLeft, vDecKeypointsRight;
-	cv::Mat decDescriptorsLeft, decDescriptorsRight;
-
-	// Get frame info
-	CORB_SLAM2::FrameInfo info;
-	info.mnHeight = imgHeight;
-	info.mnWidth = imgWidth;
-
-	// Lock decoder for the corresponding agent id
-	int nAgentId = msg->nrobotid;
-	std::unique_lock<std::mutex> lock(mutexPool[nAgentId]);
-
-	// Check if decoding instance is available
-	if (coderMap->find(nAgentId) == coderMap->end())
-		(*coderMap)[nAgentId] = new LBFC2::FeatureCoder(voc, codingModel, imgWidth, imgHeight, nlevels, 32, bufferSize, inter, stereo, depth);
-
-	// Decode the features
-	(*coderMap)[nAgentId]->decodeImage(img_bitstream, vDecKeypointsLeft, decDescriptorsLeft, vDecVisualWords);
-
-	// Wait previous tracking to finish
-	if (mThreadMap[nAgentId].joinable())
-		mThreadMap[nAgentId].join();
-
-	// Pass the images to the SLAM system in parallel
-	const double tframe = msg->tframe;
-	mThreadMap[nAgentId] = std::thread(&trackMono, SLAM, info, vDecKeypointsLeft, decDescriptorsLeft, vDecVisualWords,
-									   vDecKeypointsRight, decDescriptorsRight, tframe, nAgentId, img);
-}
-
 int main(int argc, char **argv)
 {
 	po::options_description desc("Allowed options");
@@ -222,6 +185,10 @@ int main(int argc, char **argv)
 	//const string &strSettingsFile2 = settings_path + "/KITTI04-12.yaml";
 	strSettingsFile1 = settings_path + "/statue.yaml";
 	strSettingsFile2 = settings_path + "/statue.yaml";
+	cv::FileStorage fsSettings(strSettingsFile1, cv::FileStorage::READ);
+	imgHeight = fsSettings["Camera.height"];
+	imgWidth = fsSettings["Camera.width"];
+
 	SLAM = new CORB_SLAM2::System(voc_path);
 
 	signal(SIGINT, signal_handler);
