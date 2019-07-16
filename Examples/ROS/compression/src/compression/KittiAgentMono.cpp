@@ -67,47 +67,6 @@ void ExtractORB(int flag, const cv::Mat &im, std::vector<cv::KeyPoint> &vKeys, c
 	}
 }
 
-void LoadImagesKittiMono(const std::string &strPathToSequence, std::vector<std::string> &vstrImageLeft,
-						 std::vector<double> &vTimestamps)
-{
-	std::ifstream fTimes;
-	std::string strPathTimeFile = strPathToSequence + "/times.txt";
-	fTimes.open(strPathTimeFile.c_str());
-	while (!fTimes.eof())
-	{
-		std::string s;
-		getline(fTimes, s);
-		if (!s.empty())
-		{
-			std::stringstream ss;
-			ss << s;
-			double t;
-			ss >> t;
-			vTimestamps.push_back(t);
-		}
-	}
-	//for kitti dataset
-	//std::string strPrefixLeft = strPathToSequence + "/image_0/";
-
-	//for scuba dataset
-	std::string strPrefixLeft = strPathToSequence + "/img";
-
-	//const int nTimes = vTimestamps.size();
-	const int nTimes = 10426;
-	vstrImageLeft.resize(nTimes);
-
-	for (int i = 0; i < nTimes; i++)
-	{
-		std::stringstream ss;
-		//kitti
-		//ss << std::setfill('0') << std::setw(6) << i;
-		//vstrImageLeft[i] = strPrefixLeft + ss.str() + ".png";
-		//scuba
-		ss << std::setfill('0') << std::setw(5) << (i + 1);
-		vstrImageLeft[i] = strPrefixLeft + ss.str() + ".jpg";
-	}
-}
-
 void loadSettings(const std::string &settingsFile)
 {
 	// Load camera parameters from settings file
@@ -139,18 +98,18 @@ void loadSettings(const std::string &settingsFile)
 	mBaseline = bf / fx;
 	mFocalLength = fx;
 
-	std::cerr << endl
-			  << "Camera Parameters: " << endl;
-	std::cerr << "- fx: " << fx << endl;
-	std::cerr << "- fy: " << fy << endl;
-	std::cerr << "- cx: " << cx << endl;
-	std::cerr << "- cy: " << cy << endl;
-	std::cerr << "- k1: " << DistCoef0.at<float>(0) << endl;
-	std::cerr << "- k2: " << DistCoef0.at<float>(1) << endl;
+	cerr << endl
+		 << "Camera Parameters: " << endl;
+	cerr << "- fx: " << fx << endl;
+	cerr << "- fy: " << fy << endl;
+	cerr << "- cx: " << cx << endl;
+	cerr << "- cy: " << cy << endl;
+	cerr << "- k1: " << DistCoef0.at<float>(0) << endl;
+	cerr << "- k2: " << DistCoef0.at<float>(1) << endl;
 	if (DistCoef0.rows == 5)
-		std::cerr << "- k3: " << DistCoef0.at<float>(4) << endl;
-	std::cerr << "- p1: " << DistCoef0.at<float>(2) << endl;
-	std::cerr << "- p2: " << DistCoef0.at<float>(3) << endl;
+		cerr << "- k3: " << DistCoef0.at<float>(4) << endl;
+	cerr << "- p1: " << DistCoef0.at<float>(2) << endl;
+	cerr << "- p2: " << DistCoef0.at<float>(3) << endl;
 
 	// Load ORB parameters
 	nFeatures = fsSettings["ORBextractor.nFeatures"];
@@ -159,26 +118,29 @@ void loadSettings(const std::string &settingsFile)
 	fIniThFAST = fsSettings["ORBextractor.iniThFAST"];
 	fMinThFAST = fsSettings["ORBextractor.minThFAST"];
 
-	std::cerr << endl
-			  << "ORB Extractor Parameters: " << endl;
-	std::cerr << "- Number of Features: " << nFeatures << endl;
-	std::cerr << "- Scale Levels: " << nLevels << endl;
-	std::cerr << "- Scale Factor: " << fScaleFactor << endl;
-	std::cerr << "- Initial Fast Threshold: " << fIniThFAST << endl;
-	std::cerr << "- Minimum Fast Threshold: " << fMinThFAST << endl;
+	cerr << endl
+		 << "ORB Extractor Parameters: " << endl;
+	cerr << "- Number of Features: " << nFeatures << endl;
+	cerr << "- Scale Levels: " << nLevels << endl;
+	cerr << "- Scale Factor: " << fScaleFactor << endl;
+	cerr << "- Initial Fast Threshold: " << fIniThFAST << endl;
+	cerr << "- Minimum Fast Threshold: " << fMinThFAST << endl;
 }
 
 int main(int argc, char **argv)
 {
+	std::cerr << "Loading Things" << std::endl;
 	po::options_description desc("Allowed options");
 	desc.add_options()("help", "produce help message")("voc,v", po::value<std::string>(), "Vocabulary path")("input,i", po::value<std::string>(), "Image path")("coding,c", po::value<std::string>(), "settings path")("settings,s", po::value<std::string>(), "ORB SLAM settings path")("robotid,r", po::value<int>(), "agent id");
 
 	po::variables_map vm;
 	po::store(po::parse_command_line(argc, argv, desc), vm);
 	po::notify(vm);
+	std::cerr << "Loading Settings" << std::endl;
 
 	// Load settings
 	std::string strSettingPath = vm["settings"].as<std::string>();
+	std::cerr << strSettingPath << std::endl;
 	loadSettings(strSettingPath);
 
 	// Load vocabulary
@@ -195,25 +157,26 @@ int main(int argc, char **argv)
 
 	// Load images
 	std::string image_path = vm["input"].as<std::string>();
-	std::cerr << "Loading image list from " << image_path << std::endl;
-	std::vector<double> vTimestamps;
-	std::vector<std::string> vCam0;
-	LoadImagesKittiMono(image_path, vCam0, vTimestamps);
+	std::cerr << "Loading Video from " << image_path << std::endl;
 
-	size_t nImages = vCam0.size();
+	bool success = false;
+	int frameskips = 5;
+	size_t nImages = 0;
+	cv::VideoCapture cap(image_path);
 
-	// Setup encoder
-	//parameteres for kitti dataset
-	//int imgWidth = 1241;
-	//int imgHeight = 376;
-
-	//parameters for scuba dataset
-	// int imgWidth = 1280;
-	// int imgHeight = 720;
-
-	//parameters for statue dataset
-	int imgWidth = 1920;
-	int imgHeight = 1080;
+	// get dimensions of image from first image
+	int imgWidth;
+	int imgHeight;
+	while (!success)
+	{
+		cv::Mat frame;
+		success = cap.read(frame);
+		if (success)
+		{
+			imgWidth = vImgLeft[0].size().width;
+			imgHeight = vImgLeft[0].size().height;
+		}
+	}
 
 	int bufferSize = 1;
 	bool inter = true;
@@ -227,101 +190,73 @@ int main(int argc, char **argv)
 
 	// Setup ROS
 	int nRobotId = vm["robotid"].as<int>();
-	// std::string bitstreamTopic = "/featComp/bitstream" + std::to_string(nRobotId);
-
-	// std::string name = "agent" + std::to_string(nRobotId);
-	// ros::init(argc, argv, name.c_str());
-	// ros::NodeHandle n;
-
-	// ros::Publisher bitstream_pub = n.advertise<compression::msg_features>(bitstreamTopic, 1000, true);
-
-	std::vector<cv::Mat> vImgLeft;
-	for (size_t imgId = 0; imgId < nImages; imgId++)
-	{
-		// Read left images from file
-		cv::Mat imLeftDist = cv::imread(vCam0[imgId], cv::IMREAD_GRAYSCALE);
-
-		vImgLeft.push_back(imLeftDist);
-
-		if (imgId % 64 == 0)
-			std::cerr << "Finished loading image " << imgId << std::endl;
-	}
-
-	// ros::Rate poll_rate(100);
-
-	// while (bitstream_pub.getNumSubscribers() == 0)
-	// {
-	// 	poll_rate.sleep();
-	// 	std::cerr << "loop" << std::endl;
-	// }
-
 	std::cerr << "Start" << std::endl;
 	std::string myfifo = "/tmp/outpipe" + std::to_string(nRobotId);
 	int fd = open(myfifo.c_str(), O_WRONLY);
-	for (size_t imgId = 0; imgId < nImages; imgId++)
+	//process each frame
+	while (success)
 	{
-		cv::Mat imLeftRect = vImgLeft[imgId];
-
-		// Extract features
-		std::vector<cv::KeyPoint> keypointsLeft;
-		cv::Mat descriptorsLeft;
-
-		std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
-		ExtractORB(0, imLeftRect, std::ref(keypointsLeft), std::ref(descriptorsLeft));
-
-		std::vector<uchar> bitstream;
-		encoder.encodeImage(keypointsLeft, descriptorsLeft, bitstream);
-
-		//double tframe = vTimestamps[imgId];
-
-		double tframe = imgId;
-		compression::msg_features msg;
-		msg.header.stamp = ros::Time::now();
-		msg.tframe = tframe;
-		msg.nrobotid = nRobotId;
-		cv::imencode(".png", imLeftRect, msg.img);
-		msg.data.assign(bitstream.begin(), bitstream.end());
-		uint64_t n = bitstream.size();
-		if (write(fd, &n, sizeof(uint64_t)) < 0)
+		if (nImages % 64 == 0)
 		{
-			perror("Error writing encoded features buffer size to fifo pipe");
-			exit(0);
+			std::cerr << "Loading Image " << nImages << std::endl;
 		}
-		// might need to do this (const char*)&bitstream[0]
-		if (write(fd, &bitstream[0], n) < 0)
+		cv::Mat frame;
+		success = cap.read(frame);
+		if (success)
 		{
-			perror("Error writing encoded features to fifo pipe");
-			exit(0);
+			nImages++;
+			if (nImages % frameskips == 0)
+			{
+				std::vector<cv::KeyPoint> keypointsLeft;
+				cv::Mat descriptorsLeft;
+
+				std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+				ExtractORB(0, frame, std::ref(keypointsLeft), std::ref(descriptorsLeft));
+
+				std::vector<uchar> bitstream;
+				encoder.encodeImage(keypointsLeft, descriptorsLeft, bitstream);
+
+				//double tframe = vTimestamps[imgId];
+
+				double tframe = imgId;
+				compression::msg_features msg;
+				msg.header.stamp = ros::Time::now();
+				msg.tframe = tframe;
+				msg.nrobotid = nRobotId;
+				cv::imencode(".png", imLeftRect, msg.img);
+				msg.data.assign(bitstream.begin(), bitstream.end());
+				uint64_t n = bitstream.size();
+				if (write(fd, &n, sizeof(uint64_t)) < 0)
+				{
+					perror("Error writing encoded features buffer size to fifo pipe");
+					exit(0);
+				}
+				// might need to do this (const char*)&bitstream[0]
+				if (write(fd, &bitstream[0], n) < 0)
+				{
+					perror("Error writing encoded features to fifo pipe");
+					exit(0);
+				}
+				n = msg.img.size();
+				if (write(fd, &n, sizeof(uint64_t)) < 0)
+				{
+					perror("Error writing image buffer size to fifo pipe");
+					exit(0);
+				}
+				// might need to do this (const char*)&msg.img[0]
+				if (write(fd, &msg.img[0], n) < 0)
+				{
+					perror("Error writing image buffer to fifo pipe");
+					exit(0);
+				}
+				// ros::spinOnce();
+
+				std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+
+				double ttrack = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1).count();
+				usleep((1) * 1e6);
+			}
 		}
-		n = msg.img.size();
-		if (write(fd, &n, sizeof(uint64_t)) < 0)
-		{
-			perror("Error writing image buffer size to fifo pipe");
-			exit(0);
-		}
-		// might need to do this (const char*)&msg.img[0]
-		if (write(fd, &msg.img[0], n) < 0)
-		{
-			perror("Error writing image buffer to fifo pipe");
-			exit(0);
-		}
-		// ros::spinOnce();
-
-		std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
-
-		double ttrack = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1).count();
-		//vTimestamps[imgId]=ttrack;
-
-		// Wait to load the next frame
-
-		//double T=0;
-		//if(imgId<nImages-1)
-		//T = vTimestamps[imgId+1]-tframe;
-		//else if(imgId>0)
-		//T = tframe-vTimestamps[imgId-1];
-
-		//if(ttrack<T)
-		usleep((1) * 1e6);
 	}
 	uint64_t n = 0;
 	if (write(fd, &n, sizeof(uint64_t)) < 0)
@@ -330,4 +265,5 @@ int main(int argc, char **argv)
 		exit(0);
 	}
 	close(fd);
+	std::cerr << "Done Processing Video" << std::endl;
 }
