@@ -35,7 +35,6 @@
 
 namespace po = boost::program_options;
 
-
 std::shared_ptr<CORB_SLAM2::ORBextractor> mpORBextractorLeft;
 std::shared_ptr<CORB_SLAM2::ORBextractor> mpORBextractorRight;
 
@@ -52,60 +51,14 @@ float mBaseline;
 float mFocalLength;
 
 
-
 void ExtractORB(int flag, const cv::Mat &im, std::vector<cv::KeyPoint> &vKeys, cv::Mat &descriptors)
 {
-    if(flag==0)
-    {
+    if(flag==0){
         (*mpORBextractorLeft)(im,cv::Mat(),vKeys,descriptors);
-    }
-    else
-    {
+    } else {
         (*mpORBextractorRight)(im,cv::Mat(),vKeys,descriptors);
     }
-
 }
-/* 
-void LoadImagesKittiMono(const std::string &strPathToSequence, std::vector<std::string> &vstrImageLeft,
-		std::vector<double> &vTimestamps)
-{
-	std::ifstream fTimes;
-	std::string strPathTimeFile = strPathToSequence + "/times.txt";
-	fTimes.open(strPathTimeFile.c_str());
-	while(!fTimes.eof())
-	{
-		std::string s;
-		getline(fTimes,s);
-		if(!s.empty())
-		{
-			std::stringstream ss;
-			ss << s;
-			double t;
-			ss >> t;
-			vTimestamps.push_back(t);
-		}
-	}
-	//for kitti dataset
-	//std::string strPrefixLeft = strPathToSequence + "/image_0/";
-
-	//for scuba dataset
-	std::string strPrefixLeft = strPathToSequence + "/image_0/zscuba";
-
-	//const int nTimes = vTimestamps.size();
-	const int nTimes = 1744-78;
-	vstrImageLeft.resize(nTimes);
-
-	for(int i=0; i<nTimes; i++)
-	{
-		std::stringstream ss;
-		//kitti
-		//ss << std::setfill('0') << std::setw(6) << i;
-		//vstrImageLeft[i] = strPrefixLeft + ss.str() + ".png";
-		//scuba
-		ss << std::setfill('0') << std::setw(4) << (i+78);
-		vstrImageLeft[i] = strPrefixLeft + ss.str() + ".jpg";
-	}
-}*/
 
 void loadSettings(const std::string &settingsFile)
 {
@@ -168,8 +121,6 @@ void loadSettings(const std::string &settingsFile)
 }
 
 
-
-
 int main(int argc, char **argv)
 {
 	std::cout << "Loading Things" << std::endl;
@@ -186,8 +137,8 @@ int main(int argc, char **argv)
 	po::variables_map vm;
 	po::store(po::parse_command_line(argc, argv, desc), vm);
 	po::notify(vm);
-
 	std::cout << "Loading Settings" << std::endl;
+
 	// Load settings
 	std::string strSettingPath = vm["settings"].as<std::string>();
 	std::cout << strSettingPath << std::endl;
@@ -210,8 +161,6 @@ int main(int argc, char **argv)
 
 	// Load images
 	std::string image_path = vm["input"].as<std::string>();
-
-
 	std::cout << "Loading Video from " << image_path << std::endl;
 
 	bool success = false;
@@ -269,28 +218,24 @@ int main(int argc, char **argv)
 			if(nImages % frameskips == 0){
 				std::vector<cv::KeyPoint> keypointsLeft;
 				cv::Mat descriptorsLeft;
-
-				std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 				std::thread threadLeft(ExtractORB,0,frame, std::ref(keypointsLeft), std::ref(descriptorsLeft));
 				threadLeft.join();
 
 				std::vector<uchar> bitstream;
 				encoder.encodeImage(keypointsLeft, descriptorsLeft, bitstream);
-
 				double tframe = nImages/frameskips;
 				compression::msg_features msg;
+
 				msg.header.stamp = ros::Time::now();
 				msg.tframe = tframe;
 				msg.nrobotid = nRobotId;
 				msg.data.assign(bitstream.begin(),bitstream.end());
 				bitstream_pub.publish(msg);
+
 				ros::spinOnce();
-				std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
-				double ttrack= std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1).count();
 				usleep((1)*1e6);
 			}
 		} 
 	}
 	std::cout << "Done Processing Video" << std::endl;
-
 }
