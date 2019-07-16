@@ -160,7 +160,7 @@ int main(int argc, char **argv)
 	std::cerr << "Loading Video from " << image_path << std::endl;
 
 	bool success = false;
-	int frameskips = 5;
+	int frameskips = 1;
 	size_t nImages = 0;
 	cv::VideoCapture cap(image_path);
 
@@ -173,8 +173,8 @@ int main(int argc, char **argv)
 		success = cap.read(frame);
 		if (success)
 		{
-			imgWidth = vImgLeft[0].size().width;
-			imgHeight = vImgLeft[0].size().height;
+			imgWidth = frame.size().width;
+			imgHeight = frame.size().height;
 		}
 	}
 
@@ -209,21 +209,19 @@ int main(int argc, char **argv)
 			{
 				std::vector<cv::KeyPoint> keypointsLeft;
 				cv::Mat descriptorsLeft;
-
+				cv::Mat gray_img;
+				cv::cvtColor(frame, gray_img, cv::COLOR_RGB2GRAY);
 				std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
-				ExtractORB(0, frame, std::ref(keypointsLeft), std::ref(descriptorsLeft));
+				ExtractORB(0, gray_img, std::ref(keypointsLeft), std::ref(descriptorsLeft));
 
 				std::vector<uchar> bitstream;
 				encoder.encodeImage(keypointsLeft, descriptorsLeft, bitstream);
 
 				//double tframe = vTimestamps[imgId];
 
-				double tframe = imgId;
 				compression::msg_features msg;
-				msg.header.stamp = ros::Time::now();
-				msg.tframe = tframe;
 				msg.nrobotid = nRobotId;
-				cv::imencode(".png", imLeftRect, msg.img);
+				cv::imencode(".png", frame, msg.img);
 				msg.data.assign(bitstream.begin(), bitstream.end());
 				uint64_t n = bitstream.size();
 				if (write(fd, &n, sizeof(uint64_t)) < 0)

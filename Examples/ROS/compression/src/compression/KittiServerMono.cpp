@@ -185,7 +185,7 @@ int main(int argc, char **argv)
 	//const string &strSettingsFile2 = settings_path + "/KITTI04-12.yaml";
 	strSettingsFile1 = settings_path + "/statue.yaml";
 	strSettingsFile2 = settings_path + "/statue.yaml";
-	cv::FileStorage fsSettings(settingsFile1, cv::FileStorage::READ);
+	cv::FileStorage fsSettings(strSettingsFile1, cv::FileStorage::READ);
 	imgHeight = fsSettings["Camera.height"];
 	imgWidth = fsSettings["Camera.width"];
 
