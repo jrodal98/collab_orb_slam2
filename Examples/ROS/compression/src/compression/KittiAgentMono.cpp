@@ -65,7 +65,7 @@ void ExtractORB(int flag, const cv::Mat &im, std::vector<cv::KeyPoint> &vKeys, c
     }
 
 }
-
+/* 
 void LoadImagesKittiMono(const std::string &strPathToSequence, std::vector<std::string> &vstrImageLeft,
 		std::vector<double> &vTimestamps)
 {
@@ -105,8 +105,7 @@ void LoadImagesKittiMono(const std::string &strPathToSequence, std::vector<std::
 		ss << std::setfill('0') << std::setw(4) << (i+78);
 		vstrImageLeft[i] = strPrefixLeft + ss.str() + ".jpg";
 	}
-}
-
+}*/
 
 void loadSettings(const std::string &settingsFile)
 {
@@ -211,54 +210,26 @@ int main(int argc, char **argv)
 
 	// Load images
 	std::string image_path = vm["input"].as<std::string>();
-	//std::cout << "Loading image list from " << image_path << std::endl;
-	//std::vector<double> vTimestamps;
-	//std::vector<std::string> vCam0;
-	//LoadImagesKittiMono(image_path, vCam0, vTimestamps);
 
-	size_t nImages = 0;
 
 	std::cout << "Loading Video from " << image_path << std::endl;
 
-	std::vector<cv::Mat> vImgLeft;
-	bool success = true;
+	bool success = false;
 	int frameskips = 5;
+	size_t nImages = 0;
 	cv::VideoCapture cap(image_path);
-	while(success){
-		if(nImages % 64 == 0){
-			std::cout << "Loading Image " << nImages << std::endl;
-		}
+
+	// get dimensions of image from first image
+	int imgWidth;
+	int imgHeight;
+	while(!success){
 		cv::Mat frame;
 		success = cap.read(frame);
 		if(success){
-			nImages++;
-			if(nImages % frameskips == 0){
-				vImgLeft.push_back(frame);
-			}
-		} else {
-			std::cout << "End of file" << std::endl;
-			break;
+			imgWidth = vImgLeft[0].size().width;
+			imgHeight = vImgLeft[0].size().height;
 		}
 	}
-	std::cout << "Done Loading Video" << std::endl;
-	nImages = nImages/frameskips;
-	// Setup encoder
-	
-	//parameteres for kitti dataset
-	//int imgWidth = 1241;
-	//int imgHeight = 376;
-	
-	//parameters for scuba dataset
-	//int imgWidth = 1280;
-	//int imgHeight = 720;
-
-	//parameters for office rug dataset
-	//int imgWidth = 1920;
-	//int imgHeight = 1080;
-
-	//no hardcoded parameters
-	int imgWidth = vImgLeft[0].size().width;
-	int imgHeight = vImgLeft[0].size().height;
 
 	int bufferSize = 1;
 	bool inter = true;
@@ -270,33 +241,13 @@ int main(int argc, char **argv)
     mpORBextractorLeft = std::shared_ptr<CORB_SLAM2::ORBextractor>(new CORB_SLAM2::ORBextractor(nFeatures, fScaleFactor, nLevels, fIniThFAST, fMinThFAST));
     mpORBextractorRight = std::shared_ptr<CORB_SLAM2::ORBextractor>(new CORB_SLAM2::ORBextractor(nFeatures, fScaleFactor, nLevels, fIniThFAST, fMinThFAST));
 
-
     // Setup ROS
     int nRobotId = vm["robotid"].as<int>();
   	std::string bitstreamTopic = "/featComp/bitstream" + std::to_string(nRobotId);
-
   	std::string name = "agent" + std::to_string(nRobotId);
   	ros::init(argc, argv, name.c_str());
   	ros::NodeHandle n;
-
   	ros::Publisher bitstream_pub = n.advertise<compression::msg_features>(bitstreamTopic, 1000, true);
-
-
-	
-	/* 
-	for( size_t imgId = 0; imgId < nImages; imgId++ )
-	{
-		// Read left images from file
-		cv::Mat imLeftDist = cv::imread(vCam0[imgId],cv::IMREAD_GRAYSCALE);
-
-
-		vImgLeft.push_back(imLeftDist);
-
-		if( imgId % 64 == 0)
-			std::cout << "Finished loading image " << imgId << std::endl;
-	}
-	*/
-
     ros::Rate poll_rate(500);
 	
 	while(bitstream_pub.getNumSubscribers() == 0){
@@ -306,50 +257,40 @@ int main(int argc, char **argv)
 
 	std::cout << "Start" << std::endl;
 
+	//process each frame
+	while(success){
+		if(nImages % 64 == 0){
+			std::cout << "Loading Image " << nImages << std::endl;
+		}
+		cv::Mat frame;
+		success = cap.read(frame);
+		if(success){
+			nImages++;
+			if(nImages % frameskips == 0){
+				std::vector<cv::KeyPoint> keypointsLeft;
+				cv::Mat descriptorsLeft;
 
+				std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+				std::thread threadLeft(ExtractORB,0,frame, std::ref(keypointsLeft), std::ref(descriptorsLeft));
+				threadLeft.join();
 
-	for( size_t imgId= 0; imgId < nImages; imgId++)
-	{
-		cv::Mat imLeftRect = vImgLeft[imgId];
-		
-		// Extract features
-		std::vector<cv::KeyPoint> keypointsLeft;
-		cv::Mat descriptorsLeft;
+				std::vector<uchar> bitstream;
+				encoder.encodeImage(keypointsLeft, descriptorsLeft, bitstream);
 
-
-		std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
-		std::thread threadLeft(ExtractORB,0,imLeftRect, std::ref(keypointsLeft), std::ref(descriptorsLeft));
-		threadLeft.join();
-
-		std::vector<uchar> bitstream;
-		encoder.encodeImage(keypointsLeft, descriptorsLeft, bitstream);
-
-		//double tframe = vTimestamps[imgId];
-		double tframe = imgId;
-		compression::msg_features msg;
-		msg.header.stamp = ros::Time::now();
-		msg.tframe = tframe;
-		msg.nrobotid = nRobotId;
-		msg.data.assign(bitstream.begin(),bitstream.end());
-		bitstream_pub.publish(msg);
-
-		ros::spinOnce();
-
-		std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
-
-        double ttrack= std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1).count();
-        //vTimestamps[imgId]=ttrack;
-
-        // Wait to load the next frame
-		
-        //double T=0;
-        //if(imgId<nImages-1)
-            //T = vTimestamps[imgId+1]-tframe;
-        //else if(imgId>0)
-            //T = tframe-vTimestamps[imgId-1];
-
-        //if(ttrack<T)
-        usleep((1)*1e6);
-
+				double tframe = nImages/frameskips;
+				compression::msg_features msg;
+				msg.header.stamp = ros::Time::now();
+				msg.tframe = tframe;
+				msg.nrobotid = nRobotId;
+				msg.data.assign(bitstream.begin(),bitstream.end());
+				bitstream_pub.publish(msg);
+				ros::spinOnce();
+				std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+				double ttrack= std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1).count();
+				usleep((1)*1e6);
+			}
+		} 
 	}
+	std::cout << "Done Processing Video" << std::endl;
+
 }
