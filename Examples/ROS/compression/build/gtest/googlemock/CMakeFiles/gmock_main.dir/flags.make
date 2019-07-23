@@ -6,5 +6,5 @@ CXX_FLAGS = -O3 -DNDEBUG -fPIC    -Wall -Wshadow -DGTEST_HAS_PTHREAD=1 -fexcepti
 
 CXX_DEFINES = -DGTEST_CREATE_SHARED_LIBRARY=1 -DROS_PACKAGE_NAME=\"compression\" -Dgmock_main_EXPORTS
 
-CXX_INCLUDES = -I/home/anita/collab/collab_orb_slam2/Examples/ROS/compression/include -I/opt/ros/melodic/include -I/usr/src/googletest/googlemock/include -I/usr/src/googletest/googlemock -I/usr/src/googletest/googletest/include -I/usr/src/googletest/googletest 
+CXX_INCLUDES = -I/home/anita/slam/dep/collab_orb_slam2/Examples/ROS/compression/include -I/opt/ros/melodic/include -I/usr/src/googletest/googlemock/include -I/usr/src/googletest/googlemock -I/usr/src/googletest/googletest/include -I/usr/src/googletest/googletest 
 

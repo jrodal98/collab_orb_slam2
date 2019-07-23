@@ -1,3 +1,0 @@
-/home/anita/collab/collab_orb_slam2/src/CMakeFiles/rebuild_cache.dir
-/home/anita/collab/collab_orb_slam2/src/CMakeFiles/CORB_SLAM2.dir
-/home/anita/collab/collab_orb_slam2/src/CMakeFiles/edit_cache.dir

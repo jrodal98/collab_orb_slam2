@@ -48,10 +48,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/anita/collab/collab_orb_slam2
+CMAKE_SOURCE_DIR = /home/anita/slam/dep/collab_orb_slam2
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/anita/collab/collab_orb_slam2/build
+CMAKE_BINARY_DIR = /home/anita/slam/dep/collab_orb_slam2/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -80,9 +80,9 @@ edit_cache/fast: edit_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/anita/collab/collab_orb_slam2/build/CMakeFiles /home/anita/collab/collab_orb_slam2/build/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/anita/slam/dep/collab_orb_slam2/build/CMakeFiles /home/anita/slam/dep/collab_orb_slam2/build/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/anita/collab/collab_orb_slam2/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/anita/slam/dep/collab_orb_slam2/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -122,6 +122,33 @@ CORB_SLAM2: cmake_check_build_system
 CORB_SLAM2/fast:
 	$(MAKE) -f CMakeFiles/CORB_SLAM2.dir/build.make CMakeFiles/CORB_SLAM2.dir/build
 .PHONY : CORB_SLAM2/fast
+
+map_segment.pb.o: map_segment.pb.cc.o
+
+.PHONY : map_segment.pb.o
+
+# target to build an object file
+map_segment.pb.cc.o:
+	$(MAKE) -f CMakeFiles/CORB_SLAM2.dir/build.make CMakeFiles/CORB_SLAM2.dir/map_segment.pb.cc.o
+.PHONY : map_segment.pb.cc.o
+
+map_segment.pb.i: map_segment.pb.cc.i
+
+.PHONY : map_segment.pb.i
+
+# target to preprocess a source file
+map_segment.pb.cc.i:
+	$(MAKE) -f CMakeFiles/CORB_SLAM2.dir/build.make CMakeFiles/CORB_SLAM2.dir/map_segment.pb.cc.i
+.PHONY : map_segment.pb.cc.i
+
+map_segment.pb.s: map_segment.pb.cc.s
+
+.PHONY : map_segment.pb.s
+
+# target to generate assembly for a file
+map_segment.pb.cc.s:
+	$(MAKE) -f CMakeFiles/CORB_SLAM2.dir/build.make CMakeFiles/CORB_SLAM2.dir/map_segment.pb.cc.s
+.PHONY : map_segment.pb.cc.s
 
 src/Converter.o: src/Converter.cc.o
 
@@ -726,6 +753,9 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... CORB_SLAM2"
 	@echo "... edit_cache"
+	@echo "... map_segment.pb.o"
+	@echo "... map_segment.pb.i"
+	@echo "... map_segment.pb.s"
 	@echo "... src/Converter.o"
 	@echo "... src/Converter.i"
 	@echo "... src/Converter.s"

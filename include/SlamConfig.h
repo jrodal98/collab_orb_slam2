@@ -23,22 +23,20 @@
 * For more information see <https://github.com/raulmur/ORB_SLAM2>
 */
 
-
 #ifndef SLAMCONFIG_H
 #define SLAMCONFIG_H
 
-#include<string>
-#include<thread>
-#include<opencv2/core/core.hpp>
+#include <string>
+#include <thread>
+#include <opencv2/core/core.hpp>
 
 namespace CORB_SLAM2
 {
 
-
 class SLAMConfig
 {
 public:
-	void Load( std::string strSettingPath )
+	void Load(std::string strSettingPath)
 	{
 		cv::FileStorage fSettings(strSettingPath, cv::FileStorage::READ);
 
@@ -61,13 +59,13 @@ public:
 
 		mfps = fSettings["Camera.fps"];
 
-		mDistCoef = cv::Mat(4,1,CV_32F);
+		mDistCoef = cv::Mat(4, 1, CV_32F);
 		mDistCoef.at<float>(0) = fSettings["Camera.k1"];
 		mDistCoef.at<float>(1) = fSettings["Camera.k2"];
 		mDistCoef.at<float>(2) = fSettings["Camera.p1"];
 		mDistCoef.at<float>(3) = fSettings["Camera.p2"];
 		const float k3 = fSettings["Camera.k3"];
-		if(k3!=0)
+		if (k3 != 0)
 		{
 			mDistCoef.resize(5);
 			mDistCoef.at<float>(4) = k3;
@@ -85,7 +83,6 @@ public:
 		mThDepth = fSettings["ThDepth"];
 		mDepthMapFactor = fSettings["DepthMapFactor"];
 	}
-
 
 public:
 	float mfx;
@@ -117,17 +114,17 @@ public:
 
 	float mfps;
 
-    float mKeyFrameSize;
-    float mKeyFrameLineWidth;
-    float mGraphLineWidth;
-    float mPointSize;
-    float mCameraSize;
-    float mCameraLineWidth;
+	float mKeyFrameSize;
+	float mKeyFrameLineWidth;
+	float mGraphLineWidth;
+	float mPointSize;
+	float mCameraSize;
+	float mCameraLineWidth;
 
-    float mViewpointX, mViewpointY, mViewpointZ, mViewpointF;
-    int mT;
+	float mViewpointX, mViewpointY, mViewpointZ, mViewpointF;
+	int mT;
 };
 
-}
+} // namespace CORB_SLAM2
 
 #endif

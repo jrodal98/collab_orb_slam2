@@ -1,4 +1,6 @@
 file(REMOVE_RECURSE
+  "map_segment.pb.cc"
+  "map_segment.pb.h"
   "CMakeFiles/CORB_SLAM2.dir/src/System.cc.o"
   "CMakeFiles/CORB_SLAM2.dir/src/Tracking.cc.o"
   "CMakeFiles/CORB_SLAM2.dir/src/LocalMapping.cc.o"
@@ -21,6 +23,7 @@ file(REMOVE_RECURSE
   "CMakeFiles/CORB_SLAM2.dir/src/MapDatabase.cc.o"
   "CMakeFiles/CORB_SLAM2.dir/src/MapMerging.cc.o"
   "CMakeFiles/CORB_SLAM2.dir/src/MultiAgentInfo.cc.o"
+  "CMakeFiles/CORB_SLAM2.dir/map_segment.pb.cc.o"
   "../lib/libCORB_SLAM2.pdb"
   "../lib/libCORB_SLAM2.so"
 )

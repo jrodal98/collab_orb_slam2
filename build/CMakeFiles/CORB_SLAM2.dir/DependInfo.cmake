@@ -4,28 +4,29 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/anita/collab/collab_orb_slam2/src/Converter.cc" "/home/anita/collab/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/Converter.cc.o"
-  "/home/anita/collab/collab_orb_slam2/src/Frame.cc" "/home/anita/collab/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/Frame.cc.o"
-  "/home/anita/collab/collab_orb_slam2/src/FrameDrawer.cc" "/home/anita/collab/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/FrameDrawer.cc.o"
-  "/home/anita/collab/collab_orb_slam2/src/Initializer.cc" "/home/anita/collab/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/Initializer.cc.o"
-  "/home/anita/collab/collab_orb_slam2/src/KeyFrame.cc" "/home/anita/collab/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/KeyFrame.cc.o"
-  "/home/anita/collab/collab_orb_slam2/src/KeyFrameDatabase.cc" "/home/anita/collab/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/KeyFrameDatabase.cc.o"
-  "/home/anita/collab/collab_orb_slam2/src/LocalMapping.cc" "/home/anita/collab/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/LocalMapping.cc.o"
-  "/home/anita/collab/collab_orb_slam2/src/LoopClosing.cc" "/home/anita/collab/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/LoopClosing.cc.o"
-  "/home/anita/collab/collab_orb_slam2/src/Map.cc" "/home/anita/collab/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/Map.cc.o"
-  "/home/anita/collab/collab_orb_slam2/src/MapDatabase.cc" "/home/anita/collab/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/MapDatabase.cc.o"
-  "/home/anita/collab/collab_orb_slam2/src/MapDrawer.cc" "/home/anita/collab/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/MapDrawer.cc.o"
-  "/home/anita/collab/collab_orb_slam2/src/MapMerging.cc" "/home/anita/collab/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/MapMerging.cc.o"
-  "/home/anita/collab/collab_orb_slam2/src/MapPoint.cc" "/home/anita/collab/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/MapPoint.cc.o"
-  "/home/anita/collab/collab_orb_slam2/src/MultiAgentInfo.cc" "/home/anita/collab/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/MultiAgentInfo.cc.o"
-  "/home/anita/collab/collab_orb_slam2/src/ORBextractor.cc" "/home/anita/collab/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/ORBextractor.cc.o"
-  "/home/anita/collab/collab_orb_slam2/src/ORBmatcher.cc" "/home/anita/collab/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/ORBmatcher.cc.o"
-  "/home/anita/collab/collab_orb_slam2/src/Optimizer.cc" "/home/anita/collab/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/Optimizer.cc.o"
-  "/home/anita/collab/collab_orb_slam2/src/PnPsolver.cc" "/home/anita/collab/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/PnPsolver.cc.o"
-  "/home/anita/collab/collab_orb_slam2/src/Sim3Solver.cc" "/home/anita/collab/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/Sim3Solver.cc.o"
-  "/home/anita/collab/collab_orb_slam2/src/System.cc" "/home/anita/collab/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/System.cc.o"
-  "/home/anita/collab/collab_orb_slam2/src/Tracking.cc" "/home/anita/collab/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/Tracking.cc.o"
-  "/home/anita/collab/collab_orb_slam2/src/Viewer.cc" "/home/anita/collab/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/Viewer.cc.o"
+  "/home/anita/slam/dep/collab_orb_slam2/build/map_segment.pb.cc" "/home/anita/slam/dep/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/map_segment.pb.cc.o"
+  "/home/anita/slam/dep/collab_orb_slam2/src/Converter.cc" "/home/anita/slam/dep/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/Converter.cc.o"
+  "/home/anita/slam/dep/collab_orb_slam2/src/Frame.cc" "/home/anita/slam/dep/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/Frame.cc.o"
+  "/home/anita/slam/dep/collab_orb_slam2/src/FrameDrawer.cc" "/home/anita/slam/dep/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/FrameDrawer.cc.o"
+  "/home/anita/slam/dep/collab_orb_slam2/src/Initializer.cc" "/home/anita/slam/dep/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/Initializer.cc.o"
+  "/home/anita/slam/dep/collab_orb_slam2/src/KeyFrame.cc" "/home/anita/slam/dep/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/KeyFrame.cc.o"
+  "/home/anita/slam/dep/collab_orb_slam2/src/KeyFrameDatabase.cc" "/home/anita/slam/dep/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/KeyFrameDatabase.cc.o"
+  "/home/anita/slam/dep/collab_orb_slam2/src/LocalMapping.cc" "/home/anita/slam/dep/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/LocalMapping.cc.o"
+  "/home/anita/slam/dep/collab_orb_slam2/src/LoopClosing.cc" "/home/anita/slam/dep/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/LoopClosing.cc.o"
+  "/home/anita/slam/dep/collab_orb_slam2/src/Map.cc" "/home/anita/slam/dep/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/Map.cc.o"
+  "/home/anita/slam/dep/collab_orb_slam2/src/MapDatabase.cc" "/home/anita/slam/dep/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/MapDatabase.cc.o"
+  "/home/anita/slam/dep/collab_orb_slam2/src/MapDrawer.cc" "/home/anita/slam/dep/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/MapDrawer.cc.o"
+  "/home/anita/slam/dep/collab_orb_slam2/src/MapMerging.cc" "/home/anita/slam/dep/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/MapMerging.cc.o"
+  "/home/anita/slam/dep/collab_orb_slam2/src/MapPoint.cc" "/home/anita/slam/dep/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/MapPoint.cc.o"
+  "/home/anita/slam/dep/collab_orb_slam2/src/MultiAgentInfo.cc" "/home/anita/slam/dep/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/MultiAgentInfo.cc.o"
+  "/home/anita/slam/dep/collab_orb_slam2/src/ORBextractor.cc" "/home/anita/slam/dep/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/ORBextractor.cc.o"
+  "/home/anita/slam/dep/collab_orb_slam2/src/ORBmatcher.cc" "/home/anita/slam/dep/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/ORBmatcher.cc.o"
+  "/home/anita/slam/dep/collab_orb_slam2/src/Optimizer.cc" "/home/anita/slam/dep/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/Optimizer.cc.o"
+  "/home/anita/slam/dep/collab_orb_slam2/src/PnPsolver.cc" "/home/anita/slam/dep/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/PnPsolver.cc.o"
+  "/home/anita/slam/dep/collab_orb_slam2/src/Sim3Solver.cc" "/home/anita/slam/dep/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/Sim3Solver.cc.o"
+  "/home/anita/slam/dep/collab_orb_slam2/src/System.cc" "/home/anita/slam/dep/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/System.cc.o"
+  "/home/anita/slam/dep/collab_orb_slam2/src/Tracking.cc" "/home/anita/slam/dep/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/Tracking.cc.o"
+  "/home/anita/slam/dep/collab_orb_slam2/src/Viewer.cc" "/home/anita/slam/dep/collab_orb_slam2/build/CMakeFiles/CORB_SLAM2.dir/src/Viewer.cc.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 
@@ -39,10 +40,18 @@ set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "../"
   "../include"
   "/usr/include/eigen3"
-  "/home/anita/corbslam/collab_orb_slam2/Thirdparty/Pangolin/include"
-  "/home/anita/corbslam/collab_orb_slam2/Thirdparty/Pangolin/build/src/include"
-  "/usr/include/opencv"
+  "../Thirdparty/Pangolin/include"
+  "../Thirdparty/Pangolin/build/src/include"
+  "."
+  "/usr/local/include"
+  "/usr/local/include/opencv"
   )
+
+# Pairs of files generated by the same build rule.
+set(CMAKE_MULTIPLE_OUTPUT_PAIRS
+  "/home/anita/slam/dep/collab_orb_slam2/build/map_segment.pb.h" "/home/anita/slam/dep/collab_orb_slam2/build/map_segment.pb.cc"
+  )
+
 
 # Targets to which this target links.
 set(CMAKE_TARGET_LINKED_INFO_FILES

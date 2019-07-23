@@ -5,7 +5,7 @@ cd Thirdparty/DBoW2
 mkdir build
 cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release
-make -j 2
+make -j 4
 
 cd ../../g2o
 
@@ -14,7 +14,7 @@ echo "Configuring and building Thirdparty/g2o ..."
 mkdir build
 cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release
-make -j 2
+make -j 4
 
 echo "Building Pangolin"
 cd ../..
@@ -23,20 +23,17 @@ cd Pangolin
 mkdir build
 cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release
-make -j 2
+make -j 4
 
 echo "Building Feature Compression"
 cd ../..
 git clone https://github.com/d-vo/featureCompression2
 cd featureCompression2
-git checkout RAL_RELEASE
 mkdir build
 mkdir install
 cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(pwd)/../install
-make -j 2 install
-
-
+make -j 4 install
 
 cd ../../../
 
@@ -51,4 +48,4 @@ echo "Configuring and building ORB_SLAM2 ..."
 mkdir build
 cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release
-make -j 2
+make -j 4

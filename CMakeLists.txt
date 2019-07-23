@@ -29,6 +29,7 @@ endif()
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
 
 find_package(OpenCV 3.0 QUIET)
+#find_package(OpenCV 4.0 QUIET)
 if(NOT OpenCV_FOUND)
    find_package(OpenCV 2.4.3 QUIET)
    if(NOT OpenCV_FOUND)
@@ -39,12 +40,21 @@ endif()
 find_package(Eigen3 3.1.0 REQUIRED)
 find_package(Pangolin REQUIRED)
 
+find_package(Protobuf REQUIRED)
+if(NOT PROTOBUF_PROTOC_EXECUTABLE)
+        message(FATAL_ERROR "Could not find protoc executable (PROTOBUF_PROTOC_EXECUTABLE)")
+    endif()
+protobuf_generate_cpp(MAP_PB_SOURCE MAP_PB_HEADER src/protobuf/map_segment.proto)
+set_source_files_properties(${MAP_PB_HEADER} ${MAP_PB_SOURCE} COMPILE_FLAGS -Wno-unused-variable)
+
 include_directories(
 ${PROJECT_SOURCE_DIR}
 ${PROJECT_SOURCE_DIR}/include
 ${EIGEN3_INCLUDE_DIR}
 ${Pangolin_INCLUDE_DIRS}
+${CMAKE_CURRENT_BINARY_DIR}
 )
+
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 
@@ -71,6 +81,7 @@ src/Viewer.cc
 src/MapDatabase.cc
 src/MapMerging.cc
 src/MultiAgentInfo.cc
+${MAP_PB_SOURCE}
 )
 
 find_package(Boost REQUIRED COMPONENTS filesystem system thread program_options)
@@ -79,10 +90,8 @@ target_link_libraries(${PROJECT_NAME}
 ${OpenCV_LIBS}
 ${EIGEN3_LIBS}
 ${Pangolin_LIBRARIES}
+${PROTOBUF_LIBRARIES}
 ${PROJECT_SOURCE_DIR}/Thirdparty/DBoW2/lib/libDBoW2.so
 ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
 ${Boost_LIBRARIES}
 )
-
-
-

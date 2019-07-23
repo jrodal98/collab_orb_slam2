@@ -8,13 +8,14 @@ import struct
 import std_msgs.msg
 
 class msg_features(genpy.Message):
-  _md5sum = "1f479cc2f4feb5562e889083a5793916"
+  _md5sum = "04d13c1edd86671c6fafa1517f5067ac"
   _type = "compression/msg_features"
   _has_header = True #flag to mark the presence of a Header object
   _full_text = """Header header
 float64 tframe
 int16 nrobotid
 byte[] data
+uint8[] img
 ================================================================================
 MSG: std_msgs/Header
 # Standard metadata for higher-level stamped data types.
@@ -31,8 +32,8 @@ time stamp
 #Frame this data is associated with
 string frame_id
 """
-  __slots__ = ['header','tframe','nrobotid','data']
-  _slot_types = ['std_msgs/Header','float64','int16','byte[]']
+  __slots__ = ['header','tframe','nrobotid','data','img']
+  _slot_types = ['std_msgs/Header','float64','int16','byte[]','uint8[]']
 
   def __init__(self, *args, **kwds):
     """
@@ -42,7 +43,7 @@ string frame_id
     changes.  You cannot mix in-order arguments and keyword arguments.
 
     The available fields are:
-       header,tframe,nrobotid,data
+       header,tframe,nrobotid,data,img
 
     :param args: complete set of field values, in .msg order
     :param kwds: use keyword arguments corresponding to message field names
@@ -59,11 +60,14 @@ string frame_id
         self.nrobotid = 0
       if self.data is None:
         self.data = []
+      if self.img is None:
+        self.img = b''
     else:
       self.header = std_msgs.msg.Header()
       self.tframe = 0.
       self.nrobotid = 0
       self.data = []
+      self.img = b''
 
   def _get_types(self):
     """
@@ -91,6 +95,13 @@ string frame_id
       buff.write(_struct_I.pack(length))
       pattern = '<%sb'%length
       buff.write(struct.pack(pattern, *self.data))
+      _x = self.img
+      length = len(_x)
+      # - if encoded as a list instead, serialize as bytes instead of string
+      if type(_x) in [list, tuple]:
+        buff.write(struct.pack('<I%sB'%length, length, *_x))
+      else:
+        buff.write(struct.pack('<I%ss'%length, length, _x))
     except struct.error as se: self._check_types(struct.error("%s: '%s' when writing '%s'" % (type(se), str(se), str(locals().get('_x', self)))))
     except TypeError as te: self._check_types(ValueError("%s: '%s' when writing '%s'" % (type(te), str(te), str(locals().get('_x', self)))))
 
@@ -127,6 +138,12 @@ string frame_id
       start = end
       end += struct.calcsize(pattern)
       self.data = struct.unpack(pattern, str[start:end])
+      start = end
+      end += 4
+      (length,) = _struct_I.unpack(str[start:end])
+      start = end
+      end += length
+      self.img = str[start:end]
       return self
     except struct.error as e:
       raise genpy.DeserializationError(e) #most likely buffer underfill
@@ -153,6 +170,13 @@ string frame_id
       buff.write(_struct_I.pack(length))
       pattern = '<%sb'%length
       buff.write(self.data.tostring())
+      _x = self.img
+      length = len(_x)
+      # - if encoded as a list instead, serialize as bytes instead of string
+      if type(_x) in [list, tuple]:
+        buff.write(struct.pack('<I%sB'%length, length, *_x))
+      else:
+        buff.write(struct.pack('<I%ss'%length, length, _x))
     except struct.error as se: self._check_types(struct.error("%s: '%s' when writing '%s'" % (type(se), str(se), str(locals().get('_x', self)))))
     except TypeError as te: self._check_types(ValueError("%s: '%s' when writing '%s'" % (type(te), str(te), str(locals().get('_x', self)))))
 
@@ -190,6 +214,12 @@ string frame_id
       start = end
       end += struct.calcsize(pattern)
       self.data = numpy.frombuffer(str[start:end], dtype=numpy.int8, count=length)
+      start = end
+      end += 4
+      (length,) = _struct_I.unpack(str[start:end])
+      start = end
+      end += length
+      self.img = str[start:end]
       return self
     except struct.error as e:
       raise genpy.DeserializationError(e) #most likely buffer underfill

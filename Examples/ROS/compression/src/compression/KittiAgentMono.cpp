@@ -31,7 +31,12 @@
 #include "System.h"
 #include "feature_coder.h"
 
-
+#include <stdio.h>
+#include <string.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 namespace po = boost::program_options;
 
@@ -45,19 +50,21 @@ int fIniThFAST;
 int fMinThFAST;
 cv::Mat K0;
 cv::Mat DistCoef0;
-cv::Mat M1l,M2l;
-cv::Mat M1r,M2r;
+cv::Mat M1l, M2l;
+cv::Mat M1r, M2r;
 float mBaseline;
 float mFocalLength;
 
-
 void ExtractORB(int flag, const cv::Mat &im, std::vector<cv::KeyPoint> &vKeys, cv::Mat &descriptors)
 {
-    if(flag==0){
-        (*mpORBextractorLeft)(im,cv::Mat(),vKeys,descriptors);
-    } else {
-        (*mpORBextractorRight)(im,cv::Mat(),vKeys,descriptors);
-    }
+	if (flag == 0)
+	{
+		(*mpORBextractorLeft)(im, cv::Mat(), vKeys, descriptors);
+	}
+	else
+	{
+		(*mpORBextractorRight)(im, cv::Mat(), vKeys, descriptors);
+	}
 }
 
 void loadSettings(const std::string &settingsFile)
@@ -69,19 +76,19 @@ void loadSettings(const std::string &settingsFile)
 	float cx = fsSettings["Camera.cx"];
 	float cy = fsSettings["Camera.cy"];
 
-	K0 = cv::Mat::eye(3,3,CV_32F);
-	K0.at<float>(0,0) = fx;
-	K0.at<float>(1,1) = fy;
-	K0.at<float>(0,2) = cx;
-	K0.at<float>(1,2) = cy;
+	K0 = cv::Mat::eye(3, 3, CV_32F);
+	K0.at<float>(0, 0) = fx;
+	K0.at<float>(1, 1) = fy;
+	K0.at<float>(0, 2) = cx;
+	K0.at<float>(1, 2) = cy;
 
-	DistCoef0 = cv::Mat(4,1,CV_32F);
+	DistCoef0 = cv::Mat(4, 1, CV_32F);
 	DistCoef0.at<float>(0) = fsSettings["Camera.k1"];
 	DistCoef0.at<float>(1) = fsSettings["Camera.k2"];
 	DistCoef0.at<float>(2) = fsSettings["Camera.p1"];
 	DistCoef0.at<float>(3) = fsSettings["Camera.p2"];
 	const float k3 = fsSettings["Camera.k3"];
-	if(k3!=0)
+	if (k3 != 0)
 	{
 		DistCoef0.resize(5);
 		DistCoef0.at<float>(4) = k3;
@@ -91,18 +98,18 @@ void loadSettings(const std::string &settingsFile)
 	mBaseline = bf / fx;
 	mFocalLength = fx;
 
-	cout << endl << "Camera Parameters: " << endl;
-	cout << "- fx: " << fx << endl;
-	cout << "- fy: " << fy << endl;
-	cout << "- cx: " << cx << endl;
-	cout << "- cy: " << cy << endl;
-	cout << "- k1: " << DistCoef0.at<float>(0) << endl;
-	cout << "- k2: " << DistCoef0.at<float>(1) << endl;
-	if(DistCoef0.rows==5)
-		cout << "- k3: " << DistCoef0.at<float>(4) << endl;
-	cout << "- p1: " << DistCoef0.at<float>(2) << endl;
-	cout << "- p2: " << DistCoef0.at<float>(3) << endl;
-
+	cerr << endl
+		 << "Camera Parameters: " << endl;
+	cerr << "- fx: " << fx << endl;
+	cerr << "- fy: " << fy << endl;
+	cerr << "- cx: " << cx << endl;
+	cerr << "- cy: " << cy << endl;
+	cerr << "- k1: " << DistCoef0.at<float>(0) << endl;
+	cerr << "- k2: " << DistCoef0.at<float>(1) << endl;
+	if (DistCoef0.rows == 5)
+		cerr << "- k3: " << DistCoef0.at<float>(4) << endl;
+	cerr << "- p1: " << DistCoef0.at<float>(2) << endl;
+	cerr << "- p2: " << DistCoef0.at<float>(3) << endl;
 
 	// Load ORB parameters
 	nFeatures = fsSettings["ORBextractor.nFeatures"];
@@ -111,70 +118,61 @@ void loadSettings(const std::string &settingsFile)
 	fIniThFAST = fsSettings["ORBextractor.iniThFAST"];
 	fMinThFAST = fsSettings["ORBextractor.minThFAST"];
 
-
-	cout << endl  << "ORB Extractor Parameters: " << endl;
-	cout << "- Number of Features: " << nFeatures << endl;
-	cout << "- Scale Levels: " << nLevels << endl;
-	cout << "- Scale Factor: " << fScaleFactor << endl;
-	cout << "- Initial Fast Threshold: " << fIniThFAST << endl;
-	cout << "- Minimum Fast Threshold: " << fMinThFAST << endl;
+	cerr << endl
+		 << "ORB Extractor Parameters: " << endl;
+	cerr << "- Number of Features: " << nFeatures << endl;
+	cerr << "- Scale Levels: " << nLevels << endl;
+	cerr << "- Scale Factor: " << fScaleFactor << endl;
+	cerr << "- Initial Fast Threshold: " << fIniThFAST << endl;
+	cerr << "- Minimum Fast Threshold: " << fMinThFAST << endl;
 }
-
 
 int main(int argc, char **argv)
 {
-	std::cout << "Loading Things" << std::endl;
+	std::cerr << "Loading Things" << std::endl;
 	po::options_description desc("Allowed options");
-	desc.add_options()
-						("help", "produce help message")
-						("voc,v", po::value<std::string>(), "Vocabulary path")
-						("input,i", po::value<std::string>(), "Image path")
-						("coding,c", po::value<std::string>(), "settings path")
-						("settings,s", po::value<std::string>(), "ORB SLAM settings path")
-						("robotid,r", po::value<int>(), "agent id");
-
+	desc.add_options()("help", "produce help message")("voc,v", po::value<std::string>(), "Vocabulary path")("input,i", po::value<std::string>(), "Image path")("coding,c", po::value<std::string>(), "settings path")("settings,s", po::value<std::string>(), "ORB SLAM settings path")("robotid,r", po::value<int>(), "agent id");
 
 	po::variables_map vm;
 	po::store(po::parse_command_line(argc, argv, desc), vm);
 	po::notify(vm);
-	std::cout << "Loading Settings" << std::endl;
+	std::cerr << "Loading Settings" << std::endl;
 
 	// Load settings
 	std::string strSettingPath = vm["settings"].as<std::string>();
-	std::cout << strSettingPath << std::endl;
+	std::cerr << strSettingPath << std::endl;
 	loadSettings(strSettingPath);
-
 
 	// Load vocabulary
 	std::string voc_path = vm["voc"].as<std::string>();
 	ORBVocabulary voc;
-	std::cout << "Loading vocabulary from " << voc_path << std::endl;
+	std::cerr << "Loading vocabulary from " << voc_path << std::endl;
 	voc.loadFromTextFile(voc_path);
-
 
 	// Load coding statistics
 	std::string settings_path = vm["coding"].as<std::string>();
-	std::cout << "Loading statistics from " << settings_path << std::endl;
+	std::cerr << "Loading statistics from " << settings_path << std::endl;
 	LBFC2::CodingStats codingModel;
-	codingModel.load(settings_path );
-
+	codingModel.load(settings_path);
 
 	// Load images
 	std::string image_path = vm["input"].as<std::string>();
-	std::cout << "Loading Video from " << image_path << std::endl;
+	std::cerr << "Loading Video from " << image_path << std::endl;
 
 	bool success = false;
-	int frameskips = 5;
+	int frameskips = 1;
 	size_t nImages = 0;
 	cv::VideoCapture cap(image_path);
 
 	// get dimensions of image from first image
 	int imgWidth;
 	int imgHeight;
-	while(!success){
+	while (!success)
+	{
 		cv::Mat frame;
 		success = cap.read(frame);
-		if(success){
+		if (success)
+		{
 			imgWidth = frame.size().width;
 			imgHeight = frame.size().height;
 		}
@@ -184,58 +182,85 @@ int main(int argc, char **argv)
 	bool inter = true;
 	bool stereo = false;
 	bool depth = false;
-	LBFC2::FeatureCoder encoder(voc, codingModel,imgWidth, imgHeight, nLevels, 32, bufferSize, inter, stereo, depth, mFocalLength, mBaseline);
+	LBFC2::FeatureCoder encoder(voc, codingModel, imgWidth, imgHeight, nLevels, 32, bufferSize, inter, stereo, depth, mFocalLength, mBaseline);
 
 	// Setup features
-    mpORBextractorLeft = std::shared_ptr<CORB_SLAM2::ORBextractor>(new CORB_SLAM2::ORBextractor(nFeatures, fScaleFactor, nLevels, fIniThFAST, fMinThFAST));
-    mpORBextractorRight = std::shared_ptr<CORB_SLAM2::ORBextractor>(new CORB_SLAM2::ORBextractor(nFeatures, fScaleFactor, nLevels, fIniThFAST, fMinThFAST));
+	mpORBextractorLeft = std::shared_ptr<CORB_SLAM2::ORBextractor>(new CORB_SLAM2::ORBextractor(nFeatures, fScaleFactor, nLevels, fIniThFAST, fMinThFAST));
+	mpORBextractorRight = std::shared_ptr<CORB_SLAM2::ORBextractor>(new CORB_SLAM2::ORBextractor(nFeatures, fScaleFactor, nLevels, fIniThFAST, fMinThFAST));
 
-    // Setup ROS
-    int nRobotId = vm["robotid"].as<int>();
-  	std::string bitstreamTopic = "/featComp/bitstream" + std::to_string(nRobotId);
-  	std::string name = "agent" + std::to_string(nRobotId);
-  	ros::init(argc, argv, name.c_str());
-  	ros::NodeHandle n;
-  	ros::Publisher bitstream_pub = n.advertise<compression::msg_features>(bitstreamTopic, 1000, true);
-    ros::Rate poll_rate(500);
-	
-	while(bitstream_pub.getNumSubscribers() == 0){
-		poll_rate.sleep();
-		std::cout << "loop" << std::endl;
-	}
-
-	std::cout << "Start" << std::endl;
-
+	// Setup ROS
+	int nRobotId = vm["robotid"].as<int>();
+	int coutfd = 1;
+	std::cerr << "Start" << std::endl;
 	//process each frame
-	while(success){
-		if(nImages % 64 == 0){
-			std::cout << "Loading Image " << nImages << std::endl;
+	while (success)
+	{
+		if (nImages % 64 == 0)
+		{
+			std::cerr << "Loading Image " << nImages << std::endl;
 		}
 		cv::Mat frame;
 		success = cap.read(frame);
-		if(success){
+		if (success)
+		{
 			nImages++;
-			if(nImages % frameskips == 0){
+			if (nImages % frameskips == 0)
+			{
 				std::vector<cv::KeyPoint> keypointsLeft;
 				cv::Mat descriptorsLeft;
-				std::thread threadLeft(ExtractORB,0,frame, std::ref(keypointsLeft), std::ref(descriptorsLeft));
-				threadLeft.join();
+				cv::Mat gray_img;
+				cv::cvtColor(frame, gray_img, cv::COLOR_RGB2GRAY);
+				std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+				ExtractORB(0, gray_img, std::ref(keypointsLeft), std::ref(descriptorsLeft));
 
 				std::vector<uchar> bitstream;
 				encoder.encodeImage(keypointsLeft, descriptorsLeft, bitstream);
-				double tframe = nImages/frameskips;
+
+				//double tframe = vTimestamps[imgId];
+
 				compression::msg_features msg;
-
-				msg.header.stamp = ros::Time::now();
-				msg.tframe = tframe;
 				msg.nrobotid = nRobotId;
-				msg.data.assign(bitstream.begin(),bitstream.end());
-				bitstream_pub.publish(msg);
+				cv::imencode(".png", frame, msg.img);
+				msg.data.assign(bitstream.begin(), bitstream.end());
+				uint64_t n = bitstream.size();
+				if (write(coutfd, &n, sizeof(uint64_t)) < 0)
+				{
+					perror("Error writing encoded features buffer size to fifo pipe");
+					exit(0);
+				}
+				// might need to do this (const char*)&bitstream[0]
+				if (write(coutfd, &bitstream[0], n) < 0)
+				{
+					perror("Error writing encoded features to fifo pipe");
+					exit(0);
+				}
+				n = msg.img.size();
+				if (write(coutfd, &n, sizeof(uint64_t)) < 0)
+				{
+					perror("Error writing image buffer size to fifo pipe");
+					exit(0);
+				}
+				// might need to do this (const char*)&msg.img[0]
+				if (write(coutfd, &msg.img[0], n) < 0)
+				{
+					perror("Error writing image buffer to fifo pipe");
+					exit(0);
+				}
+				// ros::spinOnce();
 
-				ros::spinOnce();
-				usleep((1)*1e6);
+				std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+
+				double ttrack = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1).count();
+				usleep((1) * 1e6);
 			}
-		} 
+		}
 	}
-	std::cout << "Done Processing Video" << std::endl;
+	uint64_t n = 0;
+	if (write(coutfd, &n, sizeof(uint64_t)) < 0)
+	{
+		perror("Error writing finish signal to fifo pipe");
+		exit(0);
+	}
+	close(coutfd);
+	std::cerr << "Done Processing Video" << std::endl;
 }

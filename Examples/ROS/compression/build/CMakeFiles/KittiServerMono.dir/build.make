@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/anita/collab/collab_orb_slam2/Examples/ROS/compression
+CMAKE_SOURCE_DIR = /home/anita/slam/dep/collab_orb_slam2/Examples/ROS/compression
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/anita/collab/collab_orb_slam2/Examples/ROS/compression/build
+CMAKE_BINARY_DIR = /home/anita/slam/dep/collab_orb_slam2/Examples/ROS/compression/build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/KittiServerMono.dir/depend.make
@@ -59,16 +59,16 @@ include CMakeFiles/KittiServerMono.dir/flags.make
 
 CMakeFiles/KittiServerMono.dir/src/compression/KittiServerMono.cpp.o: CMakeFiles/KittiServerMono.dir/flags.make
 CMakeFiles/KittiServerMono.dir/src/compression/KittiServerMono.cpp.o: ../src/compression/KittiServerMono.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/anita/collab/collab_orb_slam2/Examples/ROS/compression/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/KittiServerMono.dir/src/compression/KittiServerMono.cpp.o"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/KittiServerMono.dir/src/compression/KittiServerMono.cpp.o -c /home/anita/collab/collab_orb_slam2/Examples/ROS/compression/src/compression/KittiServerMono.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/anita/slam/dep/collab_orb_slam2/Examples/ROS/compression/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/KittiServerMono.dir/src/compression/KittiServerMono.cpp.o"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/KittiServerMono.dir/src/compression/KittiServerMono.cpp.o -c /home/anita/slam/dep/collab_orb_slam2/Examples/ROS/compression/src/compression/KittiServerMono.cpp
 
 CMakeFiles/KittiServerMono.dir/src/compression/KittiServerMono.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/KittiServerMono.dir/src/compression/KittiServerMono.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/anita/collab/collab_orb_slam2/Examples/ROS/compression/src/compression/KittiServerMono.cpp > CMakeFiles/KittiServerMono.dir/src/compression/KittiServerMono.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/anita/slam/dep/collab_orb_slam2/Examples/ROS/compression/src/compression/KittiServerMono.cpp > CMakeFiles/KittiServerMono.dir/src/compression/KittiServerMono.cpp.i
 
 CMakeFiles/KittiServerMono.dir/src/compression/KittiServerMono.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/KittiServerMono.dir/src/compression/KittiServerMono.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/anita/collab/collab_orb_slam2/Examples/ROS/compression/src/compression/KittiServerMono.cpp -o CMakeFiles/KittiServerMono.dir/src/compression/KittiServerMono.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/anita/slam/dep/collab_orb_slam2/Examples/ROS/compression/src/compression/KittiServerMono.cpp -o CMakeFiles/KittiServerMono.dir/src/compression/KittiServerMono.cpp.s
 
 CMakeFiles/KittiServerMono.dir/src/compression/KittiServerMono.cpp.o.requires:
 
@@ -90,59 +90,67 @@ KittiServerMono_EXTERNAL_OBJECTS =
 
 ../KittiServerMono: CMakeFiles/KittiServerMono.dir/src/compression/KittiServerMono.cpp.o
 ../KittiServerMono: CMakeFiles/KittiServerMono.dir/build.make
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_shape.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_stitching.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_superres.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_videostab.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_aruco.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_bgsegm.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_bioinspired.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_ccalib.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_datasets.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_dpm.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_face.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_freetype.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_fuzzy.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_hdf.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_line_descriptor.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_optflow.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_plot.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_reg.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_saliency.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_stereo.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_structured_light.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_surface_matching.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_text.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_ximgproc.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_xobjdetect.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_xphoto.so.3.2.0
+../KittiServerMono: /usr/local/lib/libopencv_stitching.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_superres.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_videostab.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_aruco.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_bgsegm.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_bioinspired.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_ccalib.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_dnn_objdetect.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_dpm.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_face.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_freetype.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_fuzzy.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_hdf.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_hfs.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_img_hash.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_line_descriptor.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_optflow.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_reg.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_rgbd.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_saliency.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_stereo.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_structured_light.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_surface_matching.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_tracking.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_xfeatures2d.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_ximgproc.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_xobjdetect.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_xphoto.so.3.4.6
 ../KittiServerMono: /usr/lib/x86_64-linux-gnu/libboost_filesystem.so
 ../KittiServerMono: /usr/lib/x86_64-linux-gnu/libboost_program_options.so
 ../KittiServerMono: /usr/lib/x86_64-linux-gnu/libboost_system.so
-../KittiServerMono: /home/anita/corbslam/collab_orb_slam2/Thirdparty/Pangolin/build/src/libpangolin.so
+../KittiServerMono: /home/anita/slam/Pangolin/build/src/libpangolin.so
 ../KittiServerMono: ../../../../Thirdparty/DBoW2/lib/libDBoW2.so
 ../KittiServerMono: ../../../../Thirdparty/g2o/lib/libg2o.so
 ../KittiServerMono: ../../../../lib/libCORB_SLAM2.so
 ../KittiServerMono: ../../../../Thirdparty/featureCompression2/install/lib/libLBFC2.so
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_video.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_viz.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_phase_unwrapping.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_rgbd.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_calib3d.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_features2d.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_flann.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_objdetect.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_ml.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_highgui.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_photo.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_videoio.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_imgcodecs.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_imgproc.so.3.2.0
-../KittiServerMono: /usr/lib/x86_64-linux-gnu/libopencv_core.so.3.2.0
+../KittiServerMono: /usr/local/lib/libopencv_shape.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_phase_unwrapping.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_video.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_datasets.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_plot.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_text.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_dnn.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_ml.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_objdetect.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_calib3d.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_features2d.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_flann.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_highgui.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_videoio.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_imgcodecs.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_photo.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_imgproc.so.3.4.6
+../KittiServerMono: /usr/local/lib/libopencv_core.so.3.4.6
 ../KittiServerMono: /usr/lib/x86_64-linux-gnu/libGL.so
 ../KittiServerMono: /usr/lib/x86_64-linux-gnu/libGLU.so
 ../KittiServerMono: /usr/lib/x86_64-linux-gnu/libGLEW.so
 ../KittiServerMono: /usr/lib/x86_64-linux-gnu/libEGL.so
+../KittiServerMono: /usr/lib/x86_64-linux-gnu/libwayland-client.so
+../KittiServerMono: /usr/lib/x86_64-linux-gnu/libwayland-egl.so
+../KittiServerMono: /usr/lib/x86_64-linux-gnu/libwayland-cursor.so
 ../KittiServerMono: /usr/lib/x86_64-linux-gnu/libSM.so
 ../KittiServerMono: /usr/lib/x86_64-linux-gnu/libICE.so
 ../KittiServerMono: /usr/lib/x86_64-linux-gnu/libX11.so
@@ -162,7 +170,7 @@ KittiServerMono_EXTERNAL_OBJECTS =
 ../KittiServerMono: /usr/lib/x86_64-linux-gnu/libIlmImf.so
 ../KittiServerMono: /usr/lib/x86_64-linux-gnu/liblz4.so
 ../KittiServerMono: CMakeFiles/KittiServerMono.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/anita/collab/collab_orb_slam2/Examples/ROS/compression/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable ../KittiServerMono"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/anita/slam/dep/collab_orb_slam2/Examples/ROS/compression/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable ../KittiServerMono"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/KittiServerMono.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -179,6 +187,6 @@ CMakeFiles/KittiServerMono.dir/clean:
 .PHONY : CMakeFiles/KittiServerMono.dir/clean
 
 CMakeFiles/KittiServerMono.dir/depend:
-	cd /home/anita/collab/collab_orb_slam2/Examples/ROS/compression/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/anita/collab/collab_orb_slam2/Examples/ROS/compression /home/anita/collab/collab_orb_slam2/Examples/ROS/compression /home/anita/collab/collab_orb_slam2/Examples/ROS/compression/build /home/anita/collab/collab_orb_slam2/Examples/ROS/compression/build /home/anita/collab/collab_orb_slam2/Examples/ROS/compression/build/CMakeFiles/KittiServerMono.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/anita/slam/dep/collab_orb_slam2/Examples/ROS/compression/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/anita/slam/dep/collab_orb_slam2/Examples/ROS/compression /home/anita/slam/dep/collab_orb_slam2/Examples/ROS/compression /home/anita/slam/dep/collab_orb_slam2/Examples/ROS/compression/build /home/anita/slam/dep/collab_orb_slam2/Examples/ROS/compression/build /home/anita/slam/dep/collab_orb_slam2/Examples/ROS/compression/build/CMakeFiles/KittiServerMono.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/KittiServerMono.dir/depend
 

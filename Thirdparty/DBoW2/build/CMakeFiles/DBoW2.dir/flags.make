@@ -6,5 +6,5 @@ CXX_FLAGS =  -Wall  -O3 -march=native -std=c++11 -O3 -DNDEBUG -fPIC
 
 CXX_DEFINES = -DDBoW2_EXPORTS
 
-CXX_INCLUDES = -isystem /usr/include/opencv 
+CXX_INCLUDES = -isystem /usr/local/include -isystem /usr/local/include/opencv 
 

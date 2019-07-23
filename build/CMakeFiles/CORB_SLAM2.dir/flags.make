@@ -6,5 +6,7 @@ CXX_FLAGS =  -Wall   -O3 -march=native -std=c++11 -O3 -DNDEBUG -fPIC
 
 CXX_DEFINES = -DCOMPILEDWITHC11 -DCORB_SLAM2_EXPORTS
 
-CXX_INCLUDES = -I/home/anita/collab/collab_orb_slam2 -I/home/anita/collab/collab_orb_slam2/include -isystem /usr/include/eigen3 -isystem /home/anita/corbslam/collab_orb_slam2/Thirdparty/Pangolin/include -isystem /home/anita/corbslam/collab_orb_slam2/Thirdparty/Pangolin/build/src/include -isystem /usr/include/opencv 
+CXX_INCLUDES = -I/home/anita/slam/dep/collab_orb_slam2 -I/home/anita/slam/dep/collab_orb_slam2/include -isystem /usr/include/eigen3 -isystem /home/anita/slam/dep/collab_orb_slam2/Thirdparty/Pangolin/include -isystem /home/anita/slam/dep/collab_orb_slam2/Thirdparty/Pangolin/build/src/include -I/home/anita/slam/dep/collab_orb_slam2/build -isystem /usr/local/include -isystem /usr/local/include/opencv 
+
+# Custom flags: CMakeFiles/CORB_SLAM2.dir/map_segment.pb.cc.o_FLAGS = -Wno-unused-variable
 

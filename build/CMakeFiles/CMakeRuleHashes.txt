@@ -1,0 +1,2 @@
+# Hashes of file build rules.
+27ec8e633bdbcf0431370b129be2ddc7 map_segment.pb.cc

@@ -4,7 +4,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/anita/collab/collab_orb_slam2/Examples/ROS/compression/src/compression/KittiAgentMono.cpp" "/home/anita/collab/collab_orb_slam2/Examples/ROS/compression/build/CMakeFiles/KittiAgentMono.dir/src/compression/KittiAgentMono.cpp.o"
+  "/home/anita/slam/dep/collab_orb_slam2/Examples/ROS/compression/src/compression/KittiAgentMono.cpp" "/home/anita/slam/dep/collab_orb_slam2/Examples/ROS/compression/build/CMakeFiles/KittiAgentMono.dir/src/compression/KittiAgentMono.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 
@@ -24,10 +24,11 @@ set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "../../../.."
   "../../../../include"
   "../../../../Thirdparty/featureCompression2/install/include"
-  "/home/anita/corbslam/collab_orb_slam2/Thirdparty/Pangolin/include"
-  "/home/anita/corbslam/collab_orb_slam2/Thirdparty/Pangolin/build/src/include"
+  "/home/anita/slam/Pangolin/include"
+  "/home/anita/slam/Pangolin/build/src/include"
   "/usr/include/eigen3"
-  "/usr/include/opencv"
+  "/usr/local/include"
+  "/usr/local/include/opencv"
   )
 
 # Targets to which this target links.

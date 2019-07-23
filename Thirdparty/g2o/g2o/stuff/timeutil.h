@@ -70,7 +70,7 @@ if (1) {\
   if(1) { \
     double _start_time_ = g2o::get_time(); \
     code; \
-    fprintf(stderr, "%s took %f sec\n", text, g2o::get_time() - _start_time_); \
+    fprintf(std::cerr, "%s took %f sec\n", text, g2o::get_time() - _start_time_); \
   } else \
     (void) 0
 #endif

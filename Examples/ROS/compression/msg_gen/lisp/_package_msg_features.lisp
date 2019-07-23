@@ -7,4 +7,6 @@
           NROBOTID
           DATA-VAL
           DATA
+          IMG-VAL
+          IMG
 ))

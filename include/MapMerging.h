@@ -23,7 +23,6 @@
 * For more information see <https://github.com/raulmur/ORB_SLAM2>
 */
 
-
 #ifndef MAPMERGING_H
 #define MAPMERGING_H
 
@@ -33,8 +32,6 @@
 #include "KeyFrame.h"
 
 #include "Thirdparty/g2o/g2o/types/types_seven_dof_expmap.h"
-
-
 
 namespace CORB_SLAM2
 {
@@ -55,32 +52,32 @@ class MapDatabase;
 class MapMerging
 {
 public:
-	typedef pair<set<KeyFrame*>,int> ConsistentGroup;
-	typedef map<KeyFrame*,g2o::Sim3,std::less<KeyFrame*>,
-			Eigen::aligned_allocator<std::pair<const KeyFrame*, g2o::Sim3> > > KeyFrameAndPose;
+    typedef pair<set<KeyFrame *>, int> ConsistentGroup;
+    typedef map<KeyFrame *, g2o::Sim3, std::less<KeyFrame *>,
+                Eigen::aligned_allocator<std::pair<KeyFrame *const, g2o::Sim3>>>
+        KeyFrameAndPose;
 
-
-	struct MergeContext
-	{
-	    std::vector<ConsistentGroup> mvConsistentGroups;
-	    std::vector<KeyFrame*> mvpEnoughConsistentCandidates;
-	};
-
+    struct MergeContext
+    {
+        std::vector<ConsistentGroup> mvConsistentGroups;
+        std::vector<KeyFrame *> mvpEnoughConsistentCandidates;
+    };
 
 public:
-	MapMerging(MapDatabase *pMapDatabase, ORBVocabulary* pORBVocabulary);
+    MapMerging(MapDatabase *pMapDatabase, ORBVocabulary *pORBVocabulary);
 
-	// Main loop
-	void Run();
+    // Main loop
+    void Run();
 
-	void InsertKeyFrame(KeyFrame* pKF);
+    void InsertKeyFrame(KeyFrame *pKF);
 
     void RequestReset();
 
     // This function will run in a separate thread
     void RunGlobalBundleAdjustment(unsigned long nLoopKF, const int dstMapId);
 
-    bool isRunningGBA(){
+    bool isRunningGBA()
+    {
         unique_lock<std::mutex> lock(mMutexGBA);
         return mbRunningGBA;
     }
@@ -98,13 +95,13 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 protected:
-	bool DetectOverlap();
+    bool DetectOverlap();
 
-	bool ComputeSim3();
+    bool ComputeSim3();
 
-	void SearchAndFuse(const int nMapId, const KeyFrameAndPose &CorrectedPosesMap);
+    void SearchAndFuse(const int nMapId, const KeyFrameAndPose &CorrectedPosesMap);
 
-	void MergeMaps();
+    void MergeMaps();
 
     void ResetIfRequested();
     bool mbResetRequested;
@@ -116,46 +113,42 @@ protected:
     bool mbFinished;
     std::mutex mMutexFinish;
 
-	MapDatabase *mpMapDatabase;
-	ORBVocabulary* mpORBVocabulary;
+    MapDatabase *mpMapDatabase;
+    ORBVocabulary *mpORBVocabulary;
 
-	std::list<KeyFrame*> mlpLoopKeyFrameQueue;
+    std::list<KeyFrame *> mlpLoopKeyFrameQueue;
 
-	std::mutex mMutexStop;
+    std::mutex mMutexStop;
     std::mutex mMutexLoopQueue;
-
 
     bool mbStopped;
     bool mbStopRequested;
-
 
     // Loop detector parameters
     float mnCovisibilityConsistencyTh;
 
     // Loop detector variables
-    KeyFrame* mpCurrentKF;
-    KeyFrame* mpMatchedKF;
+    KeyFrame *mpCurrentKF;
+    KeyFrame *mpMatchedKF;
 
     std::map<int, MergeContext> mvContext;
-    std::vector<KeyFrame*> mvpCurrentConnectedKFs;
-    std::vector<MapPoint*> mvpCurrentMatchedPoints;
-    std::vector<MapPoint*> mvpLoopMapPoints;
+    std::vector<KeyFrame *> mvpCurrentConnectedKFs;
+    std::vector<MapPoint *> mvpCurrentMatchedPoints;
+    std::vector<MapPoint *> mvpLoopMapPoints;
     int mnCurrentMapCandidate;
-
 
     cv::Mat mScw;
     g2o::Sim3 mg2oScw;
 
-
     // Variables related to Global Bundle Adjustment
     bool mbRunningGBA;
     std::mutex mMutexGBA;
-    std::thread* mpThreadGBA;
+    std::thread *mpThreadGBA;
 
     // Fix scale in the stereo/RGB-D case
     bool mbFixScale;
 };
 
-} //namespace ORB_SLAM
+} // namespace CORB_SLAM2
 
 #endif
