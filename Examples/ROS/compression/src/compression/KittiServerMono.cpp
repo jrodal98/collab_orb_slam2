@@ -40,6 +40,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "agent_brain.pb.h"
+
 namespace po = boost::program_options;
 
 // Setup decoder

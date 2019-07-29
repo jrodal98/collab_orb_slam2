@@ -47,6 +47,10 @@ if(NOT PROTOBUF_PROTOC_EXECUTABLE)
 protobuf_generate_cpp(MAP_PB_SOURCE MAP_PB_HEADER src/protobuf/map_segment.proto)
 set_source_files_properties(${MAP_PB_HEADER} ${MAP_PB_SOURCE} COMPILE_FLAGS -Wno-unused-variable)
 
+protobuf_generate_cpp(AGENT_BRAIN_PB_SOURCE AGENT_BRAIN_PB_HEADER src/protobuf/agent_brain.proto)
+set_source_files_properties(${AGENT_BRAIN_PB_HEADER} ${AGENT_BRAIN_PB_SOURCE} COMPILE_FLAGS -Wno-unused-variable)
+
+message(${AGENT_BRAIN_PB_SOURCE})
 include_directories(
 ${PROJECT_SOURCE_DIR}
 ${PROJECT_SOURCE_DIR}/include
@@ -82,6 +86,7 @@ src/MapDatabase.cc
 src/MapMerging.cc
 src/MultiAgentInfo.cc
 ${MAP_PB_SOURCE}
+${AGENT_BRAIN_PB_SOURCE}
 )
 
 find_package(Boost REQUIRED COMPONENTS filesystem system thread program_options)

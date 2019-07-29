@@ -63,6 +63,7 @@ ${PROJECT_SOURCE_DIR}/../../../
 ${PROJECT_SOURCE_DIR}/../../../include
 ${PROJECT_SOURCE_DIR}/../../../Thirdparty/featureCompression2/install/include
 ${Pangolin_INCLUDE_DIRS}
+${PROJECT_SOURCE_DIR}/../../../build/
 )
 
 
