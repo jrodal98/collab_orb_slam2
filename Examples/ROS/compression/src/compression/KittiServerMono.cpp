@@ -27,7 +27,6 @@
 
 #include "boost/program_options.hpp"
 
-#include "ros/ros.h"
 #include "compression/msg_features.h"
 
 #include "System.h"
@@ -48,7 +47,6 @@ namespace po = boost::program_options;
 ORBVocabulary voc;
 LBFC2::CodingStats codingModel;
 CORB_SLAM2::System *SLAM;
-ros::AsyncSpinner *spinner;
 
 // Adapt to agent
 int bufferSize = 1;
@@ -196,7 +194,6 @@ int main(int argc, char **argv)
 	signal(SIGINT, signal_handler);
 
 	std::map<int, LBFC2::FeatureCoder *> coderMap;
-	std::map<int, ros::Subscriber> subscriberMap;
 	std::map<int, std::thread> threadPool;
 
 	int robot_id = 0;

@@ -191,8 +191,8 @@ public:
     const cv::Mat mDescriptors;
 
     //BoW
-    DBoW2::BowVector mBowVec;
-    DBoW2::FeatureVector mFeatVec;
+    DBoW2::BowVector mBowVec; // equivalent to fbow::fBow
+    DBoW2::FeatureVector mFeatVec; // equivalent to fbow::fBow2
 
     // Pose relative to parent (this is computed when bad flag is activated)
     cv::Mat mTcp;
