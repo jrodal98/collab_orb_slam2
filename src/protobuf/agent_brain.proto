@@ -9,10 +9,6 @@ message slam_data {
         repeated uint32 bgr = 3;
     }
 
-    message bin_description {
-        string description = 1;
-    }
-
     repeated keypoint keypoints = 1;
-    repeated bin_description descriptions = 2;
+    repeated string descriptions = 2;
 }
