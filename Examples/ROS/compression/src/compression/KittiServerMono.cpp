@@ -129,14 +129,13 @@ void handle_agent(int robot_id)
 	while (fifo_file)
 	{
 		uint64_t size;
-
 		fifo_file.read(static_cast<char*>(static_cast<void*>(&size)), sizeof(size));
 		data.resize(size);
-		fifo_file.read(static_cast<char*>(static_cast<void*>(data.data())), sizeof(size));
+		fifo_file.read(static_cast<char*>(static_cast<void*>(data.data())), size);
 
 		fifo_file.read(static_cast<char*>(static_cast<void*>(&size)), sizeof(size));
-		data.resize(size);
-		fifo_file.read(static_cast<char*>(static_cast<void*>(img.data())), sizeof(size));
+		img.resize(size);
+		fifo_file.read(static_cast<char*>(static_cast<void*>(img.data())), size);
 
 		track(robot_id, data, img, SLAM, coder);
 	}
