@@ -190,9 +190,8 @@ int main(int argc, char **argv)
 
 	// Setup ROS
 	int nRobotId = vm["robotid"].as<int>();
+	int coutfd = 1;
 	std::cerr << "Start" << std::endl;
-	std::string myfifo = "/tmp/outpipe" + std::to_string(nRobotId);
-	int fd = open(myfifo.c_str(), O_WRONLY);
 	//process each frame
 	while (success)
 	{
@@ -224,25 +223,25 @@ int main(int argc, char **argv)
 				cv::imencode(".png", frame, msg.img);
 				msg.data.assign(bitstream.begin(), bitstream.end());
 				uint64_t n = bitstream.size();
-				if (write(fd, &n, sizeof(uint64_t)) < 0)
+				if (write(coutfd, &n, sizeof(uint64_t)) < 0)
 				{
 					perror("Error writing encoded features buffer size to fifo pipe");
 					exit(0);
 				}
 				// might need to do this (const char*)&bitstream[0]
-				if (write(fd, &bitstream[0], n) < 0)
+				if (write(coutfd, &bitstream[0], n) < 0)
 				{
 					perror("Error writing encoded features to fifo pipe");
 					exit(0);
 				}
 				n = msg.img.size();
-				if (write(fd, &n, sizeof(uint64_t)) < 0)
+				if (write(coutfd, &n, sizeof(uint64_t)) < 0)
 				{
 					perror("Error writing image buffer size to fifo pipe");
 					exit(0);
 				}
 				// might need to do this (const char*)&msg.img[0]
-				if (write(fd, &msg.img[0], n) < 0)
+				if (write(coutfd, &msg.img[0], n) < 0)
 				{
 					perror("Error writing image buffer to fifo pipe");
 					exit(0);
@@ -257,11 +256,11 @@ int main(int argc, char **argv)
 		}
 	}
 	uint64_t n = 0;
-	if (write(fd, &n, sizeof(uint64_t)) < 0)
+	if (write(coutfd, &n, sizeof(uint64_t)) < 0)
 	{
 		perror("Error writing finish signal to fifo pipe");
 		exit(0);
 	}
-	close(fd);
+	close(coutfd);
 	std::cerr << "Done Processing Video" << std::endl;
 }
