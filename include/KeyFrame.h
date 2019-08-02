@@ -27,8 +27,7 @@
 #define KEYFRAME_H
 
 #include "MapPoint.h"
-#include "Thirdparty/DBoW2/DBoW2/BowVector.h"
-#include "Thirdparty/DBoW2/DBoW2/FeatureVector.h"
+#include "Thirdparty/fbow/src/fbow.h"
 #include "ORBVocabulary.h"
 #include "ORBextractor.h"
 #include "Frame.h"
@@ -191,8 +190,8 @@ public:
     const cv::Mat mDescriptors;
 
     //BoW
-    DBoW2::BowVector mBowVec; // equivalent to fbow::fBow
-    DBoW2::FeatureVector mFeatVec; // equivalent to fbow::fBow2
+    fbow::fBow2 mBowVec; 
+    fbow::fBow mFeatVec; 
 
     // Pose relative to parent (this is computed when bad flag is activated)
     cv::Mat mTcp;
@@ -231,7 +230,7 @@ protected:
 
     // BoW
     KeyFrameDatabase *mpKeyFrameDB;
-    ORBVocabulary *mpORBvocabulary;
+    ChosenVocabulary *mpORBvocabulary;
 
     // Grid over the image to speed up feature matching
     std::vector<std::vector<std::vector<size_t>>> mGrid;

@@ -113,14 +113,14 @@ void KeyFrame::ComputeBoW()
 {
     if (mBowVec.empty() || mFeatVec.empty())
     {
-        vector<cv::Mat> vCurrentDesc = Converter::toDescriptorVector(mDescriptors);
+        // vector<cv::Mat> vCurrentDesc = Converter::toDescriptorVector(mDescriptors);
         // Feature vector associate features with nodes in the 4th level (from leaves up)
         // We assume the vocabulary tree has 6 levels, change the 4 otherwise
-        int levelUp = 4;
-        if (mpORBvocabulary->getDepthLevels() == 5)
-            levelUp = 3;
+        // int levelUp = 4;
+        // if (mpORBvocabulary->getDepthLevels() == 5)
+        //     levelUp = 3;
 
-        mpORBvocabulary->transform(vCurrentDesc, mBowVec, mFeatVec, levelUp);
+        mpORBvocabulary->transform(mDescriptors, 3, mFeatVec,mBowVec);
     }
 }
 

@@ -29,7 +29,6 @@
 #include <pangolin/pangolin.h>
 #include <iomanip>
 #include "map_segment.pb.h"
-
 namespace CORB_SLAM2
 {
 
@@ -49,14 +48,16 @@ System::System(const string &strVocFile)
 	std::cerr << endl
 			  << "Loading ORB Vocabulary. This could take a while..." << endl;
 
-	mpVocabulary = new ORBVocabulary();
-	bool bVocLoad = mpVocabulary->loadFromTextFile(strVocFile);
-	if (!bVocLoad)
-	{
+	mpVocabulary = new ChosenVocabulary();
+	try {
+		mpVocabulary->readFromFile(strVocFile);
+	}
+	catch (const std::exception& e) {
 		cerr << "Wrong path to vocabulary. " << endl;
 		cerr << "Falied to open at: " << strVocFile << endl;
 		exit(-1);
 	}
+
 	std::cerr << "Vocabulary loaded!" << endl
 			  << endl;
 
@@ -109,6 +110,7 @@ cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const
 			mbReset = false;
 		}
 	}
+
 	cv::Mat Tcw = pTracker->GrabImageStereo(imLeft, imRight, timestamp);
 
 	unique_lock<mutex> lock2(mMutexState);
@@ -368,7 +370,7 @@ cv::Mat System::TrackMonocular(const cv::Mat &im, const double &timestamp, int n
 	mTrackingState = pTracker->mState;
 	mTrackedMapPoints = pTracker->mCurrentFrame.mvpMapPoints;
 	mTrackedKeyPointsUn = pTracker->mCurrentFrame.mvKeysUn;
-
+	SerializeData(nRobotId, Tcw);
 	return Tcw;
 }
 

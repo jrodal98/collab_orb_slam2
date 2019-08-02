@@ -60,7 +60,7 @@ class Tracking
 {
 
 public:
-    Tracking(System *pSys, ORBVocabulary *pVoc, FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer, Map *pMap,
+    Tracking(System *pSys, ChosenVocabulary *pVoc, FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer, Map *pMap,
              KeyFrameDatabase *pKFDB, SLAMConfig *pSlamConfig, const int sensor, int nRobotId);
 
     // Preprocess the input and call Track(). Extract features and performs stereo matching.
@@ -199,7 +199,7 @@ protected:
     ORBextractor *mpIniORBextractor;
 
     //BoW
-    ORBVocabulary *mpORBVocabulary;
+    ChosenVocabulary *mpChosenVocabulary;
     KeyFrameDatabase *mpKeyFrameDB;
 
     // Initalization (only for monocular)

@@ -36,7 +36,7 @@
 namespace po = boost::program_options;
 
 // Setup decoder
-ORBVocabulary voc;
+ChosenVocabulary voc;
 LBFC2::CodingStats codingModel;
 CORB_SLAM2::System *SLAM;
 ros::AsyncSpinner *spinner;

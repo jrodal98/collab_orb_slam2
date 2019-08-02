@@ -38,7 +38,7 @@
 namespace CORB_SLAM2
 {
 
-MapDatabase::MapDatabase(System *pSystem, ORBVocabulary *pVocabulary)
+MapDatabase::MapDatabase(System *pSystem, ChosenVocabulary *pVocabulary)
 	: mpSystem(pSystem), mpVocabulary(pVocabulary)
 {
 	mpMapMerger = new MapMerging(this, mpVocabulary);

@@ -44,7 +44,7 @@
 namespace po = boost::program_options;
 
 // Setup decoder
-ORBVocabulary voc;
+ChosenVocabulary voc;
 LBFC2::CodingStats codingModel;
 CORB_SLAM2::System *SLAM;
 
@@ -84,49 +84,23 @@ void signal_handler(int signal)
 void trackMono(CORB_SLAM2::System *SLAM, const CORB_SLAM2::FrameInfo &info, const std::vector<cv::KeyPoint> &keyPointsLeft,
 			   const cv::Mat &descriptorLeft, const std::vector<unsigned int> &visualWords,
 			   const std::vector<cv::KeyPoint> &keyPointsRight, const cv::Mat &descriptorRight,
-			   const double &timestamp, int nAgentId, const cv::Mat &img)
+			   const double &timestamp, int nAgentId)
 {
 	//SLAM->TrackMonoCompressed(info, keyPointsLeft, descriptorLeft, visualWords, keyPointsRight, descriptorRight, timestamp, nAgentId);
-	SLAM->TrackStereoCompressed(info, keyPointsLeft, descriptorLeft, visualWords, keyPointsRight, descriptorRight, timestamp, nAgentId, img);
+	SLAM->TrackStereoCompressed(info, keyPointsLeft, descriptorLeft, visualWords, keyPointsRight, descriptorRight, timestamp, nAgentId);
 }
 
-bool read_data(int fd, std::vector<uchar> &data, std::vector<uchar> &img)
+bool read_data(int fd, cv::Mat &descriptors, std::vector<uchar> &colors, std::vector<cv::KeyPoint> &keypoints)
 {
-	uint64_t size;
-	if (read(fd, &size, sizeof(uint64_t)) < 0)
-	{
-		perror("Error reading encoded features buffer size from fifo pipe");
-		exit(0);
-	}
-	if (!size)
-		return false;
-	data.resize(size);
-	if (read(fd, &data[0], size) < 0)
-	{
-		perror("Error reading encoded features buffer size from fifo pipe");
-		exit(0);
-	}
-	if (read(fd, &size, sizeof(uint64_t)) < 0)
-	{
-		perror("Error reading encoded features buffer size from fifo pipe");
-		exit(0);
-	}
-	img.resize(size);
-	if (read(fd, &img[0], size) < 0)
-	{
-		perror("Error reading encoded features buffer size from fifo pipe");
-		exit(0);
-	}
-
 	return true;
 }
 
-void track(int robot_id, std::vector<uchar> &data, std::vector<uchar> &img_vec, CORB_SLAM2::System *SLAM, LBFC2::FeatureCoder *coder)
+void track(int robot_id, cv::Mat &descriptors, std::vector<uchar> &img_vec, std::vector<cv::KeyPoint> &keypoints,CORB_SLAM2::System *SLAM)
 {
 	cv::Mat img = cv::imdecode(img_vec, 1);
 	std::vector<unsigned int> vDecVisualWords;
-	std::vector<cv::KeyPoint> vDecKeypointsLeft, vDecKeypointsRight;
-	cv::Mat decDescriptorsLeft, decDescriptorsRight;
+	std::vector<cv::KeyPoint> vDecKeypointsRight;
+	cv::Mat decDescriptorsRight;
 
 	// Get frame info
 	CORB_SLAM2::FrameInfo info;
@@ -134,28 +108,28 @@ void track(int robot_id, std::vector<uchar> &data, std::vector<uchar> &img_vec, 
 	info.mnWidth = imgWidth;
 
 	int nAgentId = robot_id;
-	coder->decodeImageStereo(data, vDecKeypointsLeft, decDescriptorsLeft, vDecKeypointsRight, decDescriptorsRight, vDecVisualWords);
+	// coder->decodeImageStereo(descriptors, vDecKeypointsLeft, decDescriptorsLeft, vDecKeypointsRight, decDescriptorsRight, vDecVisualWords);
 	const double tframe = 0.0; // the timeframe seems unnecessary right now, will have to actually do something about this if I'm incorrect
-	trackMono(SLAM, info, vDecKeypointsLeft, decDescriptorsLeft, vDecVisualWords,
-			  vDecKeypointsRight, decDescriptorsRight, tframe, nAgentId, img);
+	trackMono(SLAM, info, keypoints, descriptors, vDecVisualWords,
+			  vDecKeypointsRight, decDescriptorsRight, tframe, nAgentId);
 }
 
 void handle_agent(int robot_id)
 {
 	std::cerr << "Handling robot " << robot_id << std::endl;
-	SLAM->InitAgent(robot_id, (robot_id == 0) ? strSettingsFile1 : strSettingsFile2, CORB_SLAM2::Sensor::STEREO, bUseViewer);
+	SLAM->InitAgent(robot_id, (robot_id == 0) ? strSettingsFile1 : strSettingsFile2, CORB_SLAM2::Sensor::MONOCULAR, bUseViewer);
 	std::string myfifo = "/tmp/outpipe" + std::to_string(robot_id);
 	int fd = open(myfifo.c_str(), O_RDONLY);
-	LBFC2::FeatureCoder *coder = new LBFC2::FeatureCoder(voc, codingModel, imgWidth, imgHeight, nlevels, 32, bufferSize, inter, stereo, depth);
-	std::vector<uchar> data;
-	std::vector<uchar> img;
+	cv::Mat descriptors;
+	std::vector<uchar> colors;
+	std::vector<cv::KeyPoint> keypoints;
 	while (1)
 	{
-		if (!read_data(fd, data, img))
+		if (!read_data(fd, descriptors, colors, keypoints))
 			break;
-		track(robot_id, data, img, SLAM, coder);
-		data.clear();
-		img.clear();
+		track(robot_id, descriptors, colors, SLAM);
+		colors.clear();
+		keypoints.clear();
 	}
 	close(fd);
 }

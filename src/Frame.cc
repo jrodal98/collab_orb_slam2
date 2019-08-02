@@ -62,7 +62,7 @@ Frame::Frame(const Frame &frame)
 }
 
 //stereo frame
-Frame::Frame(long unsigned int nId, int nRobotId, const cv::Mat &imLeft, const cv::Mat &imRight, const double &timeStamp, ORBextractor* extractorLeft, ORBextractor* extractorRight, ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth)
+Frame::Frame(long unsigned int nId, int nRobotId, const cv::Mat &imLeft, const cv::Mat &imRight, const double &timeStamp, ORBextractor* extractorLeft, ORBextractor* extractorRight, ChosenVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth)
     :mpORBvocabulary(voc),mpORBextractorLeft(extractorLeft),mpORBextractorRight(extractorRight), mTimeStamp(timeStamp), mK(K.clone()),mDistCoef(distCoef.clone()), mbf(bf), mThDepth(thDepth),
      mpReferenceKF(static_cast<KeyFrame*>(NULL))
 {
@@ -123,7 +123,7 @@ Frame::Frame(long unsigned int nId, int nRobotId, const cv::Mat &imLeft, const c
 }
 
 Frame::Frame(long unsigned int nId, int nRobotId, const cv::Mat &imGray, const cv::Mat &imDepth, const double &timeStamp,
-		ORBextractor* extractor,ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth)
+		ORBextractor* extractor,ChosenVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth)
     :mpORBvocabulary(voc),mpORBextractorLeft(extractor),mpORBextractorRight(static_cast<ORBextractor*>(NULL)),
      mTimeStamp(timeStamp), mK(K.clone()),mDistCoef(distCoef.clone()), mbf(bf), mThDepth(thDepth)
 {
@@ -180,7 +180,7 @@ Frame::Frame(long unsigned int nId, int nRobotId, const cv::Mat &imGray, const c
 
 //frame for monocular
 Frame::Frame(long unsigned int nId, int nRobotId, const cv::Mat &imGray, const double &timeStamp,
-		ORBextractor* extractor,ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth)
+		ORBextractor* extractor,ChosenVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth)
     :mpORBvocabulary(voc),mpORBextractorLeft(extractor),mpORBextractorRight(static_cast<ORBextractor*>(NULL)),
      mTimeStamp(timeStamp), mK(K.clone()),mDistCoef(distCoef.clone()), mbf(bf), mThDepth(thDepth)
 {
@@ -240,7 +240,7 @@ Frame::Frame(long unsigned int nId, int nRobotId, const cv::Mat &imGray, const d
 Frame::Frame(long unsigned int nId, int nRobotId, const FrameInfo &info, const std::vector<cv::KeyPoint> &keyPointsLeft, const cv::Mat &descriptorLeft,
 		const std::vector<unsigned int> &visualWords,
 		const double &timeStamp, ORBextractor* extractorLeft,
-		ORBextractor* extractorRight, ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf,
+		ORBextractor* extractorRight, ChosenVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf,
 		const float &thDepth)
 	:mpORBvocabulary(voc),mpORBextractorLeft(extractorLeft),mpORBextractorRight(extractorRight), mTimeStamp(timeStamp),
 	 mK(K.clone()),mDistCoef(distCoef.clone()), mbf(bf), mThDepth(thDepth),
@@ -327,7 +327,7 @@ Frame::Frame(long unsigned int nId, int nRobotId, const FrameInfo &info, const s
 Frame::Frame(long unsigned int nId, int nRobotId, const FrameInfo &info, const std::vector<cv::KeyPoint> &keyPointsLeft, const cv::Mat &descriptorLeft,
 		const std::vector<unsigned int> &visualWords, const std::vector<cv::KeyPoint> &keyPointsRight,
 		const cv::Mat &descriptorRight,	const double &timeStamp, ORBextractor* extractorLeft,
-		ORBextractor* extractorRight, ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf,
+		ORBextractor* extractorRight, ChosenVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf,
 		const float &thDepth)
 	:mpORBvocabulary(voc),mpORBextractorLeft(extractorLeft),mpORBextractorRight(extractorRight), mTimeStamp(timeStamp),
 	 mK(K.clone()),mDistCoef(distCoef.clone()), mbf(bf), mThDepth(thDepth),
@@ -371,6 +371,7 @@ Frame::Frame(long unsigned int nId, int nRobotId, const FrameInfo &info, const s
 	for( unsigned int i_feature = 0; i_feature < visualWords.size(); i_feature++ )
 	{
 		const unsigned int &wordId = visualWords[i_feature];
+
 		DBoW2::WordValue v = mpORBvocabulary->getWordWeight(wordId);
 		DBoW2::NodeId nid = mpORBvocabulary->getParentNode(wordId, 4);
 
@@ -418,7 +419,7 @@ Frame::Frame(long unsigned int nId, int nRobotId, const FrameInfo &info, const s
 Frame::Frame(long unsigned int nId, int nRobotId, const FrameInfo &info, const std::vector<cv::KeyPoint> &keypoints,
 		const cv::Mat &descriptors, const std::vector<unsigned int> &visualWords,
 		const std::vector<float> &vfDepthValues, const double &timeStamp, ORBextractor* extractor,
-		ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth)
+		ChosenVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth)
 		:mpORBvocabulary(voc),mpORBextractorLeft(extractor),mpORBextractorRight(static_cast<ORBextractor*>(NULL)),
 		 mTimeStamp(timeStamp), mK(K.clone()),mDistCoef(distCoef.clone()), mbf(bf), mThDepth(thDepth)
 {
@@ -650,12 +651,13 @@ void Frame::ComputeBoW()
 {
     if(mBowVec.empty())
     {
-        vector<cv::Mat> vCurrentDesc = Converter::toDescriptorVector(mDescriptors);
-        int levelUp = 4;
-        if( mpORBvocabulary->getDepthLevels() == 5 )
-        	levelUp = 3;
+        // vector<cv::Mat> vCurrentDesc = Converter::toDescriptorVector(mDescriptors);
+        // int levelUp = 4;
+        // if( mpORBvocabulary->getDepthLevels() == 5 )
+        // 	levelUp = 3;
 
-        mpORBvocabulary->transform(vCurrentDesc,mBowVec,mFeatVec,levelUp);
+        // mpORBvocabulary->transform(vCurrentDesc,mBowVec,mFeatVec,levelUp);
+        mpORBvocabulary->transform(mDescriptors,3,mBowVec, mFeatVec);
     }
 }
 

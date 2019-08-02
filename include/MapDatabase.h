@@ -76,7 +76,7 @@ struct MapHolder
 class MapDatabase
 {
 public:
-	MapDatabase(System *pSystem, ORBVocabulary* pVocabulary );
+	MapDatabase(System *pSystem, ChosenVocabulary* pVocabulary );
 
     void AddMap(int nAgentId, SLAMConfig *config, Sensor sensor, bool bUseViewer = false);
 
@@ -102,7 +102,7 @@ public:
 
 protected:
     System *mpSystem;
-    ORBVocabulary* mpVocabulary;
+    ChosenVocabulary* mpVocabulary;
 
     // Map merging
     std::thread *mptMapMerger;

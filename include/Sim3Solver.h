@@ -32,7 +32,7 @@
 
 #include "KeyFrame.h"
 
-
+using namespace std;
 
 namespace CORB_SLAM2
 {

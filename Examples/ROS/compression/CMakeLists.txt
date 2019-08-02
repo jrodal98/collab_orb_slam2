@@ -51,7 +51,7 @@ ${OpenCV_LIBRARIES}
 ${Boost_LIBRARIES}
 ${EIGEN3_LIBS}
 ${Pangolin_LIBRARIES}
-${PROJECT_SOURCE_DIR}/../../../Thirdparty/DBoW2/lib/libDBoW2.so
+${PROJECT_SOURCE_DIR}/../../../Thirdparty/fbow/build/src/libfbow.so
 ${PROJECT_SOURCE_DIR}/../../../Thirdparty/g2o/lib/libg2o.so
 ${PROJECT_SOURCE_DIR}/../../../lib/libCORB_SLAM2.so
 ${PROJECT_SOURCE_DIR}/../../../Thirdparty/featureCompression2/install/lib/libLBFC2.so
@@ -66,49 +66,6 @@ ${Pangolin_INCLUDE_DIRS}
 ${PROJECT_SOURCE_DIR}/../../../build/
 )
 
-
-### DEPTH ###
-
-## SERVER EXAMPLE ##
-rosbuild_add_executable(KittiServerDepth
-${PROJECT_SOURCE_DIR}/src/compression/KittiServerDepth.cpp
-)
-target_link_libraries(KittiServerDepth
-${LIBS}
-)
-
-
-## CLIENT EXAMPLE ##
-rosbuild_add_executable(KittiAgentDepth
-${PROJECT_SOURCE_DIR}/src/compression/KittiAgentDepth.cpp
-)
-target_link_libraries(KittiAgentDepth
-${LIBS}
-)
-
-
-
-### STEREO ###
-
-## SERVER EXAMPLE ##
-rosbuild_add_executable(KittiServerStereo
-${PROJECT_SOURCE_DIR}/src/compression/KittiServerStereo.cpp
-)
-target_link_libraries(KittiServerStereo
-${LIBS}
-
-)
-
-
-## CLIENT EXAMPLE ##
-rosbuild_add_executable(KittiAgentStereo
-${PROJECT_SOURCE_DIR}/src/compression/KittiAgentStereo.cpp
-)
-
-target_link_libraries(KittiAgentStereo
-${LIBS}
-)
-
 ### MONOCULAR ###
 
 ## SERVER EXAMPLE ##
@@ -120,13 +77,12 @@ ${LIBS}
 
 )
 
+# ## CLIENT EXAMPLE ##
+# rosbuild_add_executable(KittiAgentMono
+# ${PROJECT_SOURCE_DIR}/src/compression/KittiAgentMono.cpp
+# )
 
-## CLIENT EXAMPLE ##
-rosbuild_add_executable(KittiAgentMono
-${PROJECT_SOURCE_DIR}/src/compression/KittiAgentMono.cpp
-)
-
-target_link_libraries(KittiAgentMono
-${LIBS}
-)
+# target_link_libraries(KittiAgentMono
+# ${LIBS}
+# )
 

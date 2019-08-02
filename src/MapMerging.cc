@@ -35,11 +35,12 @@
 
 #include "LocalMapping.h"
 #include "Map.h"
-#include "ORBVocabulary.h"
+#include "ChosenVocabulary.h"
 #include "Tracking.h"
 #include "KeyFrameDatabase.h"
 #include "MapDrawer.h"
 #include "map_segment.pb.h"
+#include "Thirdparty/fbow/src/fbow.h"
 #include <mutex>
 #include <thread>
 
@@ -48,9 +49,9 @@ using namespace std;
 namespace CORB_SLAM2
 {
 
-MapMerging::MapMerging(MapDatabase *pMapDatabase, ORBVocabulary *pORBVocabulary)
+MapMerging::MapMerging(MapDatabase *pMapDatabase, ChosenVocabulary *pChosenVocabulary)
 	: mbFinishRequested(false), mbFinished(true), mpMapDatabase(pMapDatabase),
-	  mpORBVocabulary(pORBVocabulary), mpMatchedKF(NULL), mbRunningGBA(false), mpThreadGBA(NULL), mbFixScale(true)
+	  mpChosenVocabulary(pChosenVocabulary), mpMatchedKF(NULL), mbRunningGBA(false), mpThreadGBA(NULL), mbFixScale(true)
 {
 	mnCovisibilityConsistencyTh = 3;
 	mbStopped = false;
@@ -169,7 +170,7 @@ bool MapMerging::DetectOverlap()
 	const int nKfMapId = mpCurrentKF->GetMapId();
 
 	const vector<KeyFrame *> vpConnectedKeyFrames = mpCurrentKF->GetVectorCovisibleKeyFrames();
-	const DBoW2::BowVector &CurrentBowVec = mpCurrentKF->mBowVec;
+	const fbow::fBow &CurrentBowVec = mpCurrentKF->mBowVec;
 	float minScore = 1;
 	for (size_t i = 0; i < vpConnectedKeyFrames.size(); i++)
 	{
@@ -178,8 +179,8 @@ bool MapMerging::DetectOverlap()
 		if (pKF->isBad())
 			continue;
 
-		const DBoW2::BowVector &BowVec = pKF->mBowVec;
-		float score = mpORBVocabulary->score(CurrentBowVec, BowVec);
+		const fbow::fBow &BowVec = pKF->mBowVec;
+		float score = fbow::fBow::score(CurrentBowVec, BowVec);
 
 		if (score < minScore)
 			minScore = score;

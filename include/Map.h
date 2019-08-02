@@ -35,6 +35,8 @@
 
 #define MAP_IDX_OFFSET 10000000
 
+using namespace std;
+
 namespace CORB_SLAM2
 {
 

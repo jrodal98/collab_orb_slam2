@@ -64,7 +64,7 @@ public:
     };
 
 public:
-    MapMerging(MapDatabase *pMapDatabase, ORBVocabulary *pORBVocabulary);
+    MapMerging(MapDatabase *pMapDatabase, ChosenVocabulary *pChosenVocabulary);
 
     // Main loop
     void Run();
@@ -114,7 +114,7 @@ protected:
     std::mutex mMutexFinish;
 
     MapDatabase *mpMapDatabase;
-    ORBVocabulary *mpORBVocabulary;
+    ChosenVocabulary *mpChosenVocabulary;
 
     std::list<KeyFrame *> mlpLoopKeyFrameQueue;
 

@@ -176,7 +176,7 @@ int main(int argc, char **argv)
 
 	// Load vocabulary
 	std::string voc_path = vm["voc"].as<std::string>();
-	ORBVocabulary voc;
+	ChosenVocabulary voc;
 	std::cerr << "Loading vocabulary from " << voc_path << std::endl;
 	voc.loadFromTextFile(voc_path);
 

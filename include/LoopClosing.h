@@ -55,7 +55,7 @@ public:
         KeyFrameAndPose;
 
 public:
-    LoopClosing(Map *pMap, KeyFrameDatabase *pDB, ORBVocabulary *pVoc, MapDatabase *pMapDatabase, const bool bFixScale);
+    LoopClosing(Map *pMap, KeyFrameDatabase *pDB, ChosenVocabulary *pVoc, MapDatabase *pMapDatabase, const bool bFixScale);
 
     void SetTracker(Tracking *pTracker);
 
@@ -118,7 +118,7 @@ protected:
     Tracking *mpTracker;
 
     KeyFrameDatabase *mpKeyFrameDB;
-    ORBVocabulary *mpORBVocabulary;
+    ChosenVocabulary *mpChosenVocabulary;
 
     std::list<KeyFrame *> mlpLoopKeyFrameQueue;
 

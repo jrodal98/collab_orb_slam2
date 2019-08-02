@@ -141,7 +141,7 @@ private:
     MapDatabase *mpMapDatabase;
 
     // ORB vocabulary used for place recognition and feature matching.
-    ORBVocabulary *mpVocabulary;
+    ChosenVocabulary *mpVocabulary;
 
     // Reset flag
     std::mutex mMutexReset;

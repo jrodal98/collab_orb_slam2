@@ -46,8 +46,8 @@ using namespace std;
 namespace CORB_SLAM2
 {
 
-Tracking::Tracking(System *pSys, ORBVocabulary *pVoc, FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer, Map *pMap,
-				   KeyFrameDatabase *pKFDB, SLAMConfig *pSlamConfig, const int sensor, int nRobotId) : mState(NO_IMAGES_YET), mnAgentId(nRobotId), mSensor(sensor), mbOnlyTracking(false), mbVO(false), mpORBVocabulary(pVoc),
+Tracking::Tracking(System *pSys, ChosenVocabulary *pVoc, FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer, Map *pMap,
+				   KeyFrameDatabase *pKFDB, SLAMConfig *pSlamConfig, const int sensor, int nRobotId) : mState(NO_IMAGES_YET), mnAgentId(nRobotId), mSensor(sensor), mbOnlyTracking(false), mbVO(false), mpChosenVocabulary(pVoc),
 																									   mpKeyFrameDB(pKFDB), mpInitializer(static_cast<Initializer *>(NULL)), mpSystem(pSys), mpViewer(NULL),
 																									   mpFrameDrawer(pFrameDrawer), mpMapDrawer(pMapDrawer), mpMap(pMap), mnLastRelocFrameId(0)
 {
@@ -150,7 +150,7 @@ cv::Mat Tracking::GrabImageStereo(const cv::Mat &imRectLeft, const cv::Mat &imRe
 
 	std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 
-	mCurrentFrame = Frame(nId, mnAgentId, mImGray, imGrayRight, timestamp, mpORBextractorLeft, mpORBextractorRight, mpORBVocabulary, mK, mDistCoef, mbf, mThDepth);
+	mCurrentFrame = Frame(nId, mnAgentId, mImGray, imGrayRight, timestamp, mpORBextractorLeft, mpORBextractorRight, mpChosenVocabulary, mK, mDistCoef, mbf, mThDepth);
 
 	std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
 	double ttrack = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1).count();
@@ -186,7 +186,7 @@ cv::Mat Tracking::GrabImageRGBD(const cv::Mat &imRGB, const cv::Mat &imD, const 
 
 	const long unsigned int nId = mpLocalMapper->GetNextFrameId(mnAgentId);
 
-	mCurrentFrame = Frame(nId, mnAgentId, mImGray, imDepth, timestamp, mpORBextractorLeft, mpORBVocabulary, mK, mDistCoef, mbf, mThDepth);
+	mCurrentFrame = Frame(nId, mnAgentId, mImGray, imDepth, timestamp, mpORBextractorLeft, mpChosenVocabulary, mK, mDistCoef, mbf, mThDepth);
 
 	Track();
 
@@ -215,9 +215,9 @@ cv::Mat Tracking::GrabImageMonocular(const cv::Mat &im, const double &timestamp)
 	const long unsigned int nId = mpLocalMapper->GetNextFrameId(mnAgentId);
 
 	if (mState == NOT_INITIALIZED || mState == NO_IMAGES_YET)
-		mCurrentFrame = Frame(nId, mnAgentId, mImGray, timestamp, mpIniORBextractor, mpORBVocabulary, mK, mDistCoef, mbf, mThDepth);
+		mCurrentFrame = Frame(nId, mnAgentId, mImGray, timestamp, mpIniORBextractor, mpChosenVocabulary, mK, mDistCoef, mbf, mThDepth);
 	else
-		mCurrentFrame = Frame(nId, mnAgentId, mImGray, timestamp, mpORBextractorLeft, mpORBVocabulary, mK, mDistCoef, mbf, mThDepth);
+		mCurrentFrame = Frame(nId, mnAgentId, mImGray, timestamp, mpORBextractorLeft, mpChosenVocabulary, mK, mDistCoef, mbf, mThDepth);
 
 	Track();
 
@@ -232,7 +232,7 @@ cv::Mat Tracking::GrabImageStereoCompressed(const FrameInfo &info, const std::ve
 
 	long unsigned int nId = mpLocalMapper->GetNextFrameId(mnAgentId);
 	mCurrentFrame = Frame(nId, mnAgentId, info, keyPointsLeft, descriptorLeft, visualWords, keyPointsRight, descriptorRight, timestamp,
-						  mpORBextractorLeft, mpORBextractorRight, mpORBVocabulary, mK, mDistCoef, mbf, mThDepth);
+						  mpORBextractorLeft, mpORBextractorRight, mpChosenVocabulary, mK, mDistCoef, mbf, mThDepth);
 
 	Track();
 
@@ -247,7 +247,7 @@ cv::Mat Tracking::GrabImageMonoCompressed(const FrameInfo &info, const std::vect
 
 	long unsigned int nId = mpLocalMapper->GetNextFrameId(mnAgentId);
 	mCurrentFrame = Frame(nId, mnAgentId, info, keyPointsLeft, descriptorLeft, visualWords, timestamp,
-						  mpORBextractorLeft, mpORBextractorRight, mpORBVocabulary, mK, mDistCoef, mbf, mThDepth);
+						  mpORBextractorLeft, mpORBextractorRight, mpChosenVocabulary, mK, mDistCoef, mbf, mThDepth);
 
 	Track();
 
@@ -263,7 +263,7 @@ cv::Mat Tracking::GrabImageRGBDCompressed(const FrameInfo &info, const std::vect
 
 	long unsigned int nId = mpLocalMapper->GetNextFrameId(mnAgentId);
 	mCurrentFrame = Frame(nId, mnAgentId, info, keypoints, descriptors, visualWords, vDepthValues, timestamp,
-						  mpORBextractorLeft, mpORBVocabulary, mK, mDistCoef, mbf, mThDepth);
+						  mpORBextractorLeft, mpChosenVocabulary, mK, mDistCoef, mbf, mThDepth);
 
 	Track();
 

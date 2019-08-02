@@ -36,6 +36,7 @@
 
 #include<mutex>
 
+using namespace std;
 
 namespace CORB_SLAM2
 {
@@ -48,7 +49,7 @@ class KeyFrameDatabase
 {
 public:
 
-   KeyFrameDatabase(const ORBVocabulary &voc);
+   KeyFrameDatabase(const ChosenVocabulary &voc);
 
    void AddMap(KeyFrameDatabase *srcDB);
 
@@ -69,7 +70,7 @@ public:
 protected:
 
   // Associated vocabulary
-  const ORBVocabulary* mpVoc;
+  const ChosenVocabulary* mpVoc;
 
   // Inverted file
   std::vector<list<KeyFrame*> > mvInvertedFile;

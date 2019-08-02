@@ -29,15 +29,14 @@
 #include <vector>
 
 #include "MapPoint.h"
-#include "Thirdparty/DBoW2/DBoW2/BowVector.h"
-#include "Thirdparty/DBoW2/DBoW2/FeatureVector.h"
+#include "Thirdparty/fbow/src/fbow.h"
 #include "ORBVocabulary.h"
 #include "KeyFrame.h"
 #include "ORBextractor.h"
 #include "FrameInfo.h"
 
 #include <opencv2/opencv.hpp>
-
+using namespace std;
 namespace CORB_SLAM2
 {
 #define FRAME_GRID_ROWS 48
@@ -55,19 +54,19 @@ public:
     Frame(const Frame &frame);
 
     // Constructor for stereo cameras.
-    Frame(long unsigned int nId, int nAgentId, const cv::Mat &imLeft, const cv::Mat &imRight, const double &timeStamp, ORBextractor* extractorLeft, ORBextractor* extractorRight, ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth);
+    Frame(long unsigned int nId, int nAgentId, const cv::Mat &imLeft, const cv::Mat &imRight, const double &timeStamp, ORBextractor* extractorLeft, ORBextractor* extractorRight, ChosenVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth);
 
     // Constructor for RGB-D cameras.
-    Frame(long unsigned int nId, int nAgentId, const cv::Mat &imGray, const cv::Mat &imDepth, const double &timeStamp, ORBextractor* extractor,ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth);
+    Frame(long unsigned int nId, int nAgentId, const cv::Mat &imGray, const cv::Mat &imDepth, const double &timeStamp, ORBextractor* extractor,ChosenVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth);
 
     // Constructor for Monocular cameras.
-    Frame(long unsigned int nId, int nAgentId, const cv::Mat &imGray, const double &timeStamp, ORBextractor* extractor,ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth);
+    Frame(long unsigned int nId, int nAgentId, const cv::Mat &imGray, const double &timeStamp, ORBextractor* extractor,ChosenVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth);
 
     // Constructor for stereo remote SLAM.
     Frame(long unsigned int nId, int nAgentId, const FrameInfo &info, const std::vector<cv::KeyPoint> &keyPointsLeft, const cv::Mat &descriptorLeft,
         		const std::vector<unsigned int> &visualWords, const std::vector<cv::KeyPoint> &keyPointsRight,
     			const cv::Mat &descriptorRight, const double &timeStamp, ORBextractor* extractorLeft,
-    			ORBextractor* extractorRight, ORBVocabulary* voc,
+    			ORBextractor* extractorRight, ChosenVocabulary* voc,
     			cv::Mat &K, cv::Mat &distCoef, const float &bf,
     			const float &thDepth);
 
@@ -75,7 +74,7 @@ public:
     // Constructor for mono remote SLAM.
     Frame(long unsigned int nId, int nAgentId, const FrameInfo &info, const std::vector<cv::KeyPoint> &keyPointsLeft, const cv::Mat &descriptorLeft,
         		const std::vector<unsigned int> &visualWords, const double &timeStamp, ORBextractor* extractorLeft,
-    			ORBextractor* extractorRight, ORBVocabulary* voc,
+    			ORBextractor* extractorRight, ChosenVocabulary* voc,
     			cv::Mat &K, cv::Mat &distCoef, const float &bf,
     			const float &thDepth);
 
@@ -83,7 +82,7 @@ public:
     Frame(long unsigned int nId, int nAgentId, const FrameInfo &info, const std::vector<cv::KeyPoint> &keyPoints,
     		const cv::Mat &descriptors, const std::vector<unsigned int> &visualWords,
 			const std::vector<float> &vfDepthValues, const double &timeStamp, ORBextractor* extractorLeft,
-			ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth);
+			ChosenVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth);
 
 
 
@@ -140,7 +139,7 @@ public:
 
 public:
     // Vocabulary used for relocalization.
-    ORBVocabulary* mpORBvocabulary;
+    ChosenVocabulary* mpORBvocabulary;
 
     // Feature extractor. The right is used only in the stereo case.
     ORBextractor* mpORBextractorLeft, *mpORBextractorRight;
@@ -182,9 +181,11 @@ public:
     std::vector<float> mvuRight;
     std::vector<float> mvDepth;
 
-    // Bag of Words Vector structures.
-    DBoW2::BowVector mBowVec;
-    DBoW2::FeatureVector mFeatVec;
+    // 3rd level words mapped to the total number of observances in the frame.
+    fbow::fBow mBowVec;
+    // 7th level words mapped to the indices of the frames's encoded 3rd level visual words
+    // that are children of that 7th level word.
+    fbow::fBow2 mFeatVec;
 
     // ORB descriptor, each row associated to a keypoint.
     cv::Mat mDescriptors, mDescriptorsRight;

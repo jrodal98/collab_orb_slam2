@@ -85,6 +85,7 @@ src/Viewer.cc
 src/MapDatabase.cc
 src/MapMerging.cc
 src/MultiAgentInfo.cc
+src/Random.cpp
 ${MAP_PB_SOURCE}
 ${AGENT_BRAIN_PB_SOURCE}
 )
@@ -96,7 +97,7 @@ ${OpenCV_LIBS}
 ${EIGEN3_LIBS}
 ${Pangolin_LIBRARIES}
 ${PROTOBUF_LIBRARIES}
-${PROJECT_SOURCE_DIR}/Thirdparty/DBoW2/lib/libDBoW2.so
+${PROJECT_SOURCE_DIR}/Thirdparty/fbow/build/src/libfbow.so
 ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
 ${Boost_LIBRARIES}
 )

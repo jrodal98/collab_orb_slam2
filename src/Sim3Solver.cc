@@ -33,7 +33,7 @@
 #include "KeyFrame.h"
 #include "ORBmatcher.h"
 
-#include "Thirdparty/DBoW2/DUtils/Random.h"
+#include "Random.h"
 
 namespace CORB_SLAM2
 {
