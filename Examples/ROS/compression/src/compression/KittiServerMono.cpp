@@ -31,6 +31,13 @@
 
 #include "System.h"
 #include "feature_coder.h"
+#include <iostream>
+#include <stdio.h>
+#include <string.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -143,7 +150,7 @@ void track(int robot_id, std::vector<uchar> &data, std::vector<uchar> &img_vec, 
 void handle_agent(int robot_id)
 {
 	std::cerr << "Handling robot " << robot_id << std::endl;
-	SLAM->InitAgent(robot_id, (robot_id == 0) ? strSettingsFile1 : strSettingsFile2, CORB_SLAM2::Sensor::STEREO, bUseViewer);
+	SLAM->InitAgent(robot_id, (robot_id == 0) ? strSettingsFile1 : strSettingsFile2, CORB_SLAM2::Sensor::MONOCULAR, bUseViewer);
 	std::string myfifo = "/tmp/outpipe" + std::to_string(robot_id);
 	int fd = open(myfifo.c_str(), O_RDONLY);
 	LBFC2::FeatureCoder *coder = new LBFC2::FeatureCoder(voc, codingModel, imgWidth, imgHeight, nlevels, 32, bufferSize, inter, stereo, depth);
@@ -183,8 +190,8 @@ int main(int argc, char **argv)
 	std::string settings_path = vm["settings"].as<std::string>();
 	//const string &strSettingsFile1 = settings_path + "/KITTI00-02.yaml";
 	//const string &strSettingsFile2 = settings_path + "/KITTI04-12.yaml";
-	strSettingsFile1 = settings_path + "/statue.yaml";
-	strSettingsFile2 = settings_path + "/statue.yaml";
+	strSettingsFile1 = settings_path + "/office.yaml";
+	strSettingsFile2 = settings_path + "/office.yaml";
 	cv::FileStorage fsSettings(strSettingsFile1, cv::FileStorage::READ);
 	imgHeight = fsSettings["Camera.height"];
 	imgWidth = fsSettings["Camera.width"];
@@ -198,14 +205,10 @@ int main(int argc, char **argv)
 
 	int robot_id = 0;
 	std::vector<std::thread> agents;
-	std::string input;
-	std::cin >> input;
-	while (input != "QUIT")
-	{
+	for (std::string line; std::getline(std::cin, line);) {
 		agents.push_back(std::thread(handle_agent, robot_id++));
-		std::cin >> input;
+		if(line == "QUIT" || line == "QUIT\n") {break;}
 	}
-
 	for (int i = 0; i < robot_id; i++)
 	{
 		agents[i].join();
