@@ -97,37 +97,6 @@ void trackMono(CORB_SLAM2::System *SLAM, const CORB_SLAM2::FrameInfo &info, cons
 	SLAM->TrackStereoCompressed(info, keyPointsLeft, descriptorLeft, visualWords, keyPointsRight, descriptorRight, timestamp, nAgentId, img);
 }
 
-bool read_data(int fd, std::vector<uchar> &data, std::vector<uchar> &img)
-{
-	uint64_t size;
-	if (read(fd, &size, sizeof(uint64_t)) < 0)
-	{
-		perror("Error reading encoded features buffer size from fifo pipe");
-		exit(0);
-	}
-	if (!size)
-		return false;
-	data.resize(size);
-	if (read(fd, &data[0], size) < 0)
-	{
-		perror("Error reading encoded features buffer size from fifo pipe");
-		exit(0);
-	}
-	if (read(fd, &size, sizeof(uint64_t)) < 0)
-	{
-		perror("Error reading encoded features buffer size from fifo pipe");
-		exit(0);
-	}
-	img.resize(size);
-	if (read(fd, &img[0], size) < 0)
-	{
-		perror("Error reading encoded features buffer size from fifo pipe");
-		exit(0);
-	}
-
-	return true;
-}
-
 void track(int robot_id, std::vector<uchar> &data, std::vector<uchar> &img_vec, CORB_SLAM2::System *SLAM, LBFC2::FeatureCoder *coder)
 {
 	cv::Mat img = cv::imdecode(img_vec, 1);
@@ -151,20 +120,26 @@ void handle_agent(int robot_id)
 {
 	std::cerr << "Handling robot " << robot_id << std::endl;
 	SLAM->InitAgent(robot_id, (robot_id == 0) ? strSettingsFile1 : strSettingsFile2, CORB_SLAM2::Sensor::MONOCULAR, bUseViewer);
-	std::string myfifo = "/tmp/outpipe" + std::to_string(robot_id);
-	int fd = open(myfifo.c_str(), O_RDONLY);
+	std::string myfifo = "outpipe" + std::to_string(robot_id);
+	std::ifstream fifo_file(myfifo);
+	std::cerr << "Opened fifo " << myfifo << std::endl;
 	LBFC2::FeatureCoder *coder = new LBFC2::FeatureCoder(voc, codingModel, imgWidth, imgHeight, nlevels, 32, bufferSize, inter, stereo, depth);
 	std::vector<uchar> data;
 	std::vector<uchar> img;
-	while (1)
+	while (fifo_file)
 	{
-		if (!read_data(fd, data, img))
-			break;
+		uint64_t size;
+
+		fifo_file.read(static_cast<char*>(static_cast<void*>(&size)), sizeof(size));
+		data.resize(size);
+		fifo_file.read(static_cast<char*>(static_cast<void*>(data.data())), sizeof(size));
+
+		fifo_file.read(static_cast<char*>(static_cast<void*>(&size)), sizeof(size));
+		data.resize(size);
+		fifo_file.read(static_cast<char*>(static_cast<void*>(img.data())), sizeof(size));
+
 		track(robot_id, data, img, SLAM, coder);
-		data.clear();
-		img.clear();
 	}
-	close(fd);
 }
 
 int main(int argc, char **argv)
