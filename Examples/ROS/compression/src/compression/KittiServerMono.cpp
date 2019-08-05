@@ -78,6 +78,7 @@ bool bUseViewer = false;
 string strSettingsFile1;
 string strSettingsFile2;
 
+
 void signal_handler(int signal)
 {
 	//Save trajectory / stats etc.
@@ -144,7 +145,7 @@ void handle_agent(int robot_id)
 int main(int argc, char **argv)
 {
 	po::options_description desc("Allowed options");
-	desc.add_options()("help", "produce help message")("voc,v", po::value<std::string>(), "Vocabulary path")("coding,c", po::value<std::string>(), "coding model")("settings,s", po::value<std::string>(), "settings base path");
+	desc.add_options()("help", "produce help message")("voc,v", po::value<std::string>(), "Vocabulary path")("coding,c", po::value<std::string>(), "coding model")("settings,s", po::value<std::string>(), "settings path");
 
 	po::variables_map vm;
 	po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -162,10 +163,8 @@ int main(int argc, char **argv)
 
 	// Setup ORB SLAM - make sure to use the correct settings file
 	std::string settings_path = vm["settings"].as<std::string>();
-	//const string &strSettingsFile1 = settings_path + "/KITTI00-02.yaml";
-	//const string &strSettingsFile2 = settings_path + "/KITTI04-12.yaml";
-	strSettingsFile1 = settings_path + "/office.yaml";
-	strSettingsFile2 = settings_path + "/office.yaml";
+	strSettingsFile1 = settings_path;
+	strSettingsFile2 = settings_path;
 	cv::FileStorage fsSettings(strSettingsFile1, cv::FileStorage::READ);
 	imgHeight = fsSettings["Camera.height"];
 	imgWidth = fsSettings["Camera.width"];
