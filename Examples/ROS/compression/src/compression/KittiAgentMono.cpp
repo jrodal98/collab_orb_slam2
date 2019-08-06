@@ -160,7 +160,7 @@ int main(int argc, char **argv)
 	std::cerr << "Loading Video from " << image_path << std::endl;
 
 	bool success = false;
-	int frameskips = 1;
+	int frameskips = 5;
 	size_t nImages = 0;
 	cv::VideoCapture cap(image_path);
 
@@ -230,8 +230,7 @@ int main(int argc, char **argv)
 
 				std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
 
-				double ttrack = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1).count();
-				usleep((1) * 1e6);
+				usleep(500);
 			}
 		}
 	}
