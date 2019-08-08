@@ -127,10 +127,11 @@ void handle_agent(int robot_id)
 	LBFC2::FeatureCoder *coder = new LBFC2::FeatureCoder(voc, codingModel, imgWidth, imgHeight, nlevels, 32, bufferSize, inter, stereo, depth);
 	std::vector<uchar> data;
 	std::vector<uchar> img;
-	while (fifo_file)
+	while (fifo_file && !fifo_file.eof())
 	{
 		uint64_t size;
 		fifo_file.read(static_cast<char*>(static_cast<void*>(&size)), sizeof(size));
+		if(!size) break;
 		data.resize(size);
 		fifo_file.read(static_cast<char*>(static_cast<void*>(data.data())), size);
 

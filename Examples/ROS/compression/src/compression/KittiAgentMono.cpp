@@ -160,79 +160,84 @@ int main(int argc, char **argv)
 	std::cerr << "Loading Video from " << image_path << std::endl;
 
 	bool success = false;
-	int frameskips = 5;
+	int frameskips = 1;
 	size_t nImages = 0;
-	cv::VideoCapture cap(image_path);
+	try {
+		cv::VideoCapture cap(image_path);
 
-	// get dimensions of image from first image
-	int imgWidth;
-	int imgHeight;
-	while (!success)
-	{
-		cv::Mat frame;
-		success = cap.read(frame);
-		if (success)
+		// get dimensions of image from first image
+		int imgWidth;
+		int imgHeight;
+		while (!success)
 		{
-			imgWidth = frame.size().width;
-			imgHeight = frame.size().height;
-		}
-	}
-
-	int bufferSize = 1;
-	bool inter = true;
-	bool stereo = false;
-	bool depth = false;
-	LBFC2::FeatureCoder encoder(voc, codingModel, imgWidth, imgHeight, nLevels, 32, bufferSize, inter, stereo, depth, mFocalLength, mBaseline);
-
-	// Setup features
-	mpORBextractorLeft = std::shared_ptr<CORB_SLAM2::ORBextractor>(new CORB_SLAM2::ORBextractor(nFeatures, fScaleFactor, nLevels, fIniThFAST, fMinThFAST));
-	mpORBextractorRight = std::shared_ptr<CORB_SLAM2::ORBextractor>(new CORB_SLAM2::ORBextractor(nFeatures, fScaleFactor, nLevels, fIniThFAST, fMinThFAST));
-
-	// Setup ROS
-	int nRobotId = vm["robotid"].as<int>();
-	std::cerr << "Start" << std::endl;
-	//process each frame
-	while (success)
-	{
-		if (nImages % 64 == 0)
-		{
-			std::cerr << "Loading Image " << nImages << std::endl;
-		}
-		cv::Mat frame;
-		success = cap.read(frame);
-		if (success)
-		{
-			nImages++;
-			if (nImages % frameskips == 0)
+			cv::Mat frame;
+			success = cap.read(frame);
+			if (success)
 			{
-				std::vector<cv::KeyPoint> keypointsLeft;
-				cv::Mat descriptorsLeft;
-				cv::Mat gray_img;
-				cv::cvtColor(frame, gray_img, cv::COLOR_RGB2GRAY);
-				std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
-				ExtractORB(0, gray_img, std::ref(keypointsLeft), std::ref(descriptorsLeft));
-
-				std::vector<uchar> bitstream;
-				encoder.encodeImage(keypointsLeft, descriptorsLeft, bitstream);
-
-				//double tframe = vTimestamps[imgId];
-
-				compression::msg_features msg;
-				msg.nrobotid = nRobotId;
-				cv::imencode(".png", frame, msg.img);
-				msg.data.assign(bitstream.begin(), bitstream.end());
-				uint64_t n = bitstream.size();
-				std::cout.write(static_cast<char*>(static_cast<void*>(&n)), sizeof(n));
-				std::cout.write(static_cast<char*>(static_cast<void*>(bitstream.data())), n);
-				n = msg.img.size();
-				std::cout.write(static_cast<char*>(static_cast<void*>(&n)), sizeof(n));
-				std::cout.write(static_cast<char*>(static_cast<void*>(msg.img.data())), n);
-
-				std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
-
-				usleep(500);
+				imgWidth = frame.size().width;
+				imgHeight = frame.size().height;
 			}
 		}
+
+		int bufferSize = 1;
+		bool inter = true;
+		bool stereo = false;
+		bool depth = false;
+		LBFC2::FeatureCoder encoder(voc, codingModel, imgWidth, imgHeight, nLevels, 32, bufferSize, inter, stereo, depth, mFocalLength, mBaseline);
+
+		// Setup features
+		mpORBextractorLeft = std::shared_ptr<CORB_SLAM2::ORBextractor>(new CORB_SLAM2::ORBextractor(nFeatures, fScaleFactor, nLevels, fIniThFAST, fMinThFAST));
+		mpORBextractorRight = std::shared_ptr<CORB_SLAM2::ORBextractor>(new CORB_SLAM2::ORBextractor(nFeatures, fScaleFactor, nLevels, fIniThFAST, fMinThFAST));
+
+		// Setup ROS
+		int nRobotId = vm["robotid"].as<int>();
+		std::cerr << "Start" << std::endl;
+		//process each frame
+		while (success)
+		{
+			if (nImages % 64 == 0)
+			{
+				std::cerr << "Loading Image " << nImages << std::endl;
+			}
+			cv::Mat frame;
+			success = cap.read(frame);
+			if (success)
+			{
+				nImages++;
+				if (nImages % frameskips == 0)
+				{
+					std::vector<cv::KeyPoint> keypointsLeft;
+					cv::Mat descriptorsLeft;
+					cv::Mat gray_img;
+					cv::cvtColor(frame, gray_img, cv::COLOR_RGB2GRAY);
+					ExtractORB(0, gray_img, std::ref(keypointsLeft), std::ref(descriptorsLeft));
+
+					std::vector<uchar> bitstream;
+					encoder.encodeImage(keypointsLeft, descriptorsLeft, bitstream);
+
+					//double tframe = vTimestamps[imgId];
+
+					compression::msg_features msg;
+					cv::imencode(".png", frame, msg.img);
+					uint64_t n = bitstream.size();
+					std::cout.write(static_cast<char*>(static_cast<void*>(&n)), sizeof(n));
+					std::cout.write(static_cast<char*>(static_cast<void*>(bitstream.data())), n);
+					n = msg.img.size();
+					std::cout.write(static_cast<char*>(static_cast<void*>(&n)), sizeof(n));
+					std::cout.write(static_cast<char*>(static_cast<void*>(msg.img.data())), n);
+				}
+			}
+		}
+	} catch (...) {
+		// End of stream signifier
+		uint64_t n = 0;
+		std::cout.write(static_cast<char*>(static_cast<void*>(&n)), sizeof(n));
+		std::cerr << "Failed Processing Video/Terminated Agent" << std::endl;
+		return -1;
 	}
+	// End of stream signifier
+	uint64_t n = 0;
+	std::cout.write(static_cast<char*>(static_cast<void*>(&n)), sizeof(n));
 	std::cerr << "Done Processing Video" << std::endl;
+	return 0;
 }
