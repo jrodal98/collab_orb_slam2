@@ -120,7 +120,7 @@ void KeyFrame::ComputeBoW()
         // if (mpORBvocabulary->getDepthLevels() == 5)
         //     levelUp = 3;
 
-        mpORBvocabulary->transform(mDescriptors, 3, mFeatVec,mBowVec);
+        mpORBvocabulary->transform(mDescriptors, 3,mBowVec, mFeatVec);
     }
 }
 
