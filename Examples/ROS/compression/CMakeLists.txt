@@ -18,8 +18,8 @@ rosbuild_init()
 rosbuild_genmsg()
 
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -Wall -O3 -march=native -fopenmp")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -O3 -march=native -fopenmp")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -Wall -O3 -g -march=native -fopenmp")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -g -O3 -march=native -fopenmp")
 
 
 # Check C++11 or C++0x support

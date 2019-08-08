@@ -31,7 +31,7 @@
 
 #include "System.h"
 #include "feature_coder.h"
-
+#include <iostream>
 #include <stdio.h>
 #include <string.h>
 #include <fcntl.h>
@@ -39,7 +39,14 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <stdio.h>
+#include <string.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include "agent_brain.pb.h"
+#include <bitset>
 
 namespace po = boost::program_options;
 
@@ -71,6 +78,7 @@ bool bUseViewer = false;
 string strSettingsFile1;
 string strSettingsFile2;
 
+
 void signal_handler(int signal)
 {
 	//Save trajectory / stats etc.
@@ -90,17 +98,12 @@ void trackMono(CORB_SLAM2::System *SLAM, const CORB_SLAM2::FrameInfo &info, cons
 	SLAM->TrackStereoCompressed(info, keyPointsLeft, descriptorLeft, visualWords, keyPointsRight, descriptorRight, timestamp, nAgentId);
 }
 
-bool read_data(int fd, cv::Mat &descriptors, std::vector<uchar> &colors, std::vector<cv::KeyPoint> &keypoints)
-{
-	return true;
-}
-
-void track(int robot_id, cv::Mat &descriptors, std::vector<uchar> &img_vec, std::vector<cv::KeyPoint> &keypoints,CORB_SLAM2::System *SLAM)
+void track(int robot_id, std::vector<uchar> &data, std::vector<uchar> &img_vec, CORB_SLAM2::System *SLAM, LBFC2::FeatureCoder *coder)
 {
 	cv::Mat img = cv::imdecode(img_vec, 1);
 	std::vector<unsigned int> vDecVisualWords;
-	std::vector<cv::KeyPoint> vDecKeypointsRight;
-	cv::Mat decDescriptorsRight;
+	std::vector<cv::KeyPoint> vDecKeypointsLeft, vDecKeypointsRight;
+	cv::Mat decDescriptorsLeft, decDescriptorsRight;
 
 	// Get frame info
 	CORB_SLAM2::FrameInfo info;
@@ -108,9 +111,9 @@ void track(int robot_id, cv::Mat &descriptors, std::vector<uchar> &img_vec, std:
 	info.mnWidth = imgWidth;
 
 	int nAgentId = robot_id;
-	// coder->decodeImageStereo(descriptors, vDecKeypointsLeft, decDescriptorsLeft, vDecKeypointsRight, decDescriptorsRight, vDecVisualWords);
+	coder->decodeImageStereo(data, vDecKeypointsLeft, decDescriptorsLeft, vDecKeypointsRight, decDescriptorsRight, vDecVisualWords);
 	const double tframe = 0.0; // the timeframe seems unnecessary right now, will have to actually do something about this if I'm incorrect
-	trackMono(SLAM, info, keypoints, descriptors, vDecVisualWords,
+	trackMono(SLAM, info, vDecKeypointsLeft, decDescriptorsLeft, vDecVisualWords,
 			  vDecKeypointsRight, decDescriptorsRight, tframe, nAgentId);
 }
 
@@ -118,26 +121,42 @@ void handle_agent(int robot_id)
 {
 	std::cerr << "Handling robot " << robot_id << std::endl;
 	SLAM->InitAgent(robot_id, (robot_id == 0) ? strSettingsFile1 : strSettingsFile2, CORB_SLAM2::Sensor::MONOCULAR, bUseViewer);
-	std::string myfifo = "/tmp/outpipe" + std::to_string(robot_id);
-	int fd = open(myfifo.c_str(), O_RDONLY);
-	cv::Mat descriptors;
-	std::vector<uchar> colors;
-	std::vector<cv::KeyPoint> keypoints;
-	while (1)
+	std::string myfifo = "outpipe" + std::to_string(robot_id);
+	std::ifstream fifo_file(myfifo);
+	std::cerr << "Opened fifo " << myfifo << std::endl;
+	std::vector<uchar> data;
+	std::vector<uchar> img;
+	while (fifo_file && !fifo_file.eof())
 	{
-		if (!read_data(fd, descriptors, colors, keypoints))
-			break;
-		track(robot_id, descriptors, colors, SLAM);
-		colors.clear();
-		keypoints.clear();
+		uint64_t size;
+		fifo_file.read(static_cast<char*>(static_cast<void*>(&size)), sizeof(size));
+		if(!size) break;
+		agent_brain::slam_data slam_data;
+		data.resize(size);
+		fifo_file.read(static_cast<char*>(static_cast<void*>(data.data())), size);
+		slam_data.ParseFromArray(data.data(), size); // THIS IS INEFFICIENT, I SHOULD BE ABLE TO PARSE STRAIGHT FROM THE PIPE
+		size_t data_size = slam_data.descriptions_size();
+        uchar desciptor_data[data_size][32];
+        int row = 0;
+        for (string description256: slam_data.descriptions()) {
+            for (int i = 0; i < description256.size(); i += 8) {
+                string description8 = description256.substr(i,8);
+                bitset<8> b(description8);
+                desciptor_data[row][i/8] = ( b.to_ulong() & 0xFF);
+            }
+            row++;
+        }
+        cv::Mat mat(data_size,32,0,&data);
+		
+
+		track(robot_id, data, img, SLAM, coder);
 	}
-	close(fd);
 }
 
 int main(int argc, char **argv)
 {
 	po::options_description desc("Allowed options");
-	desc.add_options()("help", "produce help message")("voc,v", po::value<std::string>(), "Vocabulary path")("coding,c", po::value<std::string>(), "coding model")("settings,s", po::value<std::string>(), "settings base path");
+	desc.add_options()("help", "produce help message")("voc,v", po::value<std::string>(), "Vocabulary path")("coding,c", po::value<std::string>(), "coding model")("settings,s", po::value<std::string>(), "settings path");
 
 	po::variables_map vm;
 	po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -155,10 +174,8 @@ int main(int argc, char **argv)
 
 	// Setup ORB SLAM - make sure to use the correct settings file
 	std::string settings_path = vm["settings"].as<std::string>();
-	//const string &strSettingsFile1 = settings_path + "/KITTI00-02.yaml";
-	//const string &strSettingsFile2 = settings_path + "/KITTI04-12.yaml";
-	strSettingsFile1 = settings_path + "/statue.yaml";
-	strSettingsFile2 = settings_path + "/statue.yaml";
+	strSettingsFile1 = settings_path;
+	strSettingsFile2 = settings_path;
 	cv::FileStorage fsSettings(strSettingsFile1, cv::FileStorage::READ);
 	imgHeight = fsSettings["Camera.height"];
 	imgWidth = fsSettings["Camera.width"];
@@ -172,14 +189,10 @@ int main(int argc, char **argv)
 
 	int robot_id = 0;
 	std::vector<std::thread> agents;
-	std::string input;
-	std::cin >> input;
-	while (input != "QUIT")
-	{
+	for (std::string line; std::getline(std::cin, line);) {
 		agents.push_back(std::thread(handle_agent, robot_id++));
-		std::cin >> input;
+		if(line == "QUIT" || line == "QUIT\n") {break;}
 	}
-
 	for (int i = 0; i < robot_id; i++)
 	{
 		agents[i].join();
