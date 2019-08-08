@@ -28,7 +28,7 @@
 
 #include "MapPoint.h"
 #include "Thirdparty/fbow/src/fbow.h"
-#include "ORBVocabulary.h"
+#include "ChosenVocabulary.h"
 #include "ORBextractor.h"
 #include "Frame.h"
 #include "KeyFrameDatabase.h"

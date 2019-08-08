@@ -24,8 +24,8 @@
 */
 
 
-#ifndef ORBVOCABULARY_H
-#define ORBVOCABULARY_H
+#ifndef CHOSENVOCABULARY_H
+#define CHOSENVOCABULARY_H
 
 #include"Thirdparty/fbow/src/fbow.h"
 
@@ -36,4 +36,4 @@ typedef fbow::Vocabulary ChosenVocabulary;
 
 } //namespace ORB_SLAM
 
-#endif // ORBVOCABULARY_H
+#endif // CHOSENVOCABULARY_H

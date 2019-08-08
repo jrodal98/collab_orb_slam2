@@ -31,7 +31,7 @@
 #include <map>
 #include <thread>
 
-#include "ORBVocabulary.h"
+#include "ChosenVocabulary.h"
 #include "Sensor.h"
 
 

@@ -32,7 +32,7 @@
 
 #include "KeyFrame.h"
 #include "Frame.h"
-#include "ORBVocabulary.h"
+#include "ChosenVocabulary.h"
 
 #include<mutex>
 

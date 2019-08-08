@@ -30,7 +30,7 @@
 
 #include "MapPoint.h"
 #include "Thirdparty/fbow/src/fbow.h"
-#include "ORBVocabulary.h"
+#include "ChosenVocabulary.h"
 #include "KeyFrame.h"
 #include "ORBextractor.h"
 #include "FrameInfo.h"

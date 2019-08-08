@@ -29,7 +29,7 @@
 #include "KeyFrame.h"
 #include "LocalMapping.h"
 #include "Map.h"
-#include "ORBVocabulary.h"
+#include "ChosenVocabulary.h"
 #include "Tracking.h"
 
 #include "KeyFrameDatabase.h"

@@ -282,11 +282,11 @@ Frame::Frame(long unsigned int nId, int nRobotId, const FrameInfo &info, const s
 	for( unsigned int i_feature = 0; i_feature < visualWords.size(); i_feature++ )
 	{
 		const unsigned int &wordId = visualWords[i_feature];
-		DBoW2::WordValue v = mpORBvocabulary->getWordWeight(wordId);
-		DBoW2::NodeId nid = mpORBvocabulary->getParentNode(wordId, 4);
+		// DBoW2::WordValue v = mpORBvocabulary->getWordWeight(wordId);
+		// DBoW2::NodeId nid = mpORBvocabulary->getParentNode(wordId, 4);
 
-		mBowVec.addWeight(wordId, v);
-		mFeatVec.addFeature(nid, i_feature);
+		// mBowVec.addWeight(wordId, v);
+		// mFeatVec.addFeature(nid, i_feature);
 	}
 
 
@@ -372,12 +372,41 @@ Frame::Frame(long unsigned int nId, int nRobotId, const FrameInfo &info, const s
 	{
 		const unsigned int &wordId = visualWords[i_feature];
 
-		DBoW2::WordValue v = mpORBvocabulary->getWordWeight(wordId);
-		DBoW2::NodeId nid = mpORBvocabulary->getParentNode(wordId, 4);
+		// float v = mpORBvocabulary->getWordWeight(wordId);
+		// DBoW2::NodeId nid = mpORBvocabulary->getParentNode(wordId, 4);
 
-		mBowVec.addWeight(wordId, v);
-		mFeatVec.addFeature(nid, i_feature);
+		// mBowVec.addWeight(wordId, v);
+		// mFeatVec.addFeature(nid, i_feature);
 	}
+
+    // void addWeight(WordId id, WordValue v){
+    //     BowVector::iterator vit = this->lower_bound(id);
+
+    //     if(vit != this->end() && !(this->key_comp()(id, vit->first)))
+    //     {
+    //         vit->second += v;
+    //     }
+    //     else
+    //     {
+    //         this->insert(vit, BowVector::value_type(id, v));
+    //     }
+    // }
+
+//     void FeatureVector::addFeature(NodeId id, unsigned int i_feature)
+// {
+//   FeatureVector::iterator vit = this->lower_bound(id);
+  
+//   if(vit != this->end() && vit->first == id)
+//   {
+//     vit->second.push_back(i_feature);
+//   }
+//   else
+//   {
+//     vit = this->insert(vit, FeatureVector::value_type(id, 
+//       std::vector<unsigned int>() ));
+//     vit->second.push_back(i_feature);
+//   }
+// }
 
 
 	mvKeysUn = mvKeys;

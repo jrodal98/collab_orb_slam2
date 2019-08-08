@@ -120,6 +120,7 @@ void KeyFrame::ComputeBoW()
         // if (mpORBvocabulary->getDepthLevels() == 5)
         //     levelUp = 3;
 
+        // I think the 3 should be a 4, since I trained a 10 ^ 6 vocabulary
         mpORBvocabulary->transform(mDescriptors, 3,mBowVec, mFeatVec);
     }
 }
