@@ -193,6 +193,12 @@ cv::Mat Tracking::GrabImageRGBD(const cv::Mat &imRGB, const cv::Mat &imD, const 
 	return mCurrentFrame.mTcw.clone();
 }
 
+cv::Mat Tracking::TrackMonocular(const cv::Mat &descriptions, const std::vector<cv::KeyPoint> &keypoints){
+	const long unsigned int nId = mpLocalMapper->GetNextFrameId(mnAgentId);
+	mCurrentFrame = Frame(nId, mnAgentId, descriptions, keypoints, mpChosenVocabulary, mK, mDistCoef, mbf, mThDepth);
+	Track();
+	return mCurrentFrame.mTcw.clone();
+}
 cv::Mat Tracking::GrabImageMonocular(const cv::Mat &im, const double &timestamp)
 {
 	mImGray = im;

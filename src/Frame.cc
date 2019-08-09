@@ -178,6 +178,50 @@ Frame::Frame(long unsigned int nId, int nRobotId, const cv::Mat &imGray, const c
     AssignFeaturesToGrid();
 }
 
+// my monocular constructor
+Frame::Frame(long unsigned int nId, int nAgentId, const cv::Mat &descriptions, const std::vector<cv::KeyPoint> &keypoints, 
+        ChosenVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth)
+        : mnId(nId), mnAgentId(nAgentId), mvKeys(keypoints), mDescriptors(descriptions), mpORBvocabulary(voc),mK(K.clone()),mDistCoef(distCoef.clone()),
+          mbf(bf), mThDepth(thDepth)  {
+
+    N = mvKeys.size();
+
+    if(mvKeys.empty())
+        return;
+
+    UndistortKeyPoints();
+
+    // Set no stereo information
+    mvuRight = vector<float>(N,-1);
+    mvDepth = vector<float>(N,-1);
+
+    mvpMapPoints = vector<MapPoint*>(N,static_cast<MapPoint*>(NULL));
+    mvbOutlier = vector<bool>(N,false);
+
+    // // This is done only for the first Frame (or after a change in the calibration)
+    // if(mbInitialComputations)
+    // {
+    //     ComputeImageBounds(imGray);
+
+    //     mfGridElementWidthInv=static_cast<float>(FRAME_GRID_COLS)/static_cast<float>(mnMaxX-mnMinX);
+    //     mfGridElementHeightInv=static_cast<float>(FRAME_GRID_ROWS)/static_cast<float>(mnMaxY-mnMinY);
+
+    //     fx = K.at<float>(0,0);
+    //     fy = K.at<float>(1,1);
+    //     cx = K.at<float>(0,2);
+    //     cy = K.at<float>(1,2);
+    //     invfx = 1.0f/fx;
+    //     invfy = 1.0f/fy;
+
+    //     mbInitialComputations=false;
+    // }
+
+    // mb = mbf/fx;
+
+    // AssignFeaturesToGrid();
+
+}
+
 //frame for monocular
 Frame::Frame(long unsigned int nId, int nRobotId, const cv::Mat &imGray, const double &timeStamp,
 		ORBextractor* extractor,ChosenVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth)

@@ -7,7 +7,7 @@ find_package(Boost REQUIRED COMPONENTS filesystem program_options)
 find_package(OpenCV REQUIRED)
 find_package(Eigen3 3.1.0 REQUIRED)
 find_package(Pangolin REQUIRED)
-
+find_package(Protobuf REQUIRED)
 
 include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 
@@ -51,17 +51,16 @@ ${OpenCV_LIBRARIES}
 ${Boost_LIBRARIES}
 ${EIGEN3_LIBS}
 ${Pangolin_LIBRARIES}
+${PROTOBUF_LIBRARIES}
 ${PROJECT_SOURCE_DIR}/../../../Thirdparty/fbow/build/src/libfbow.so
 ${PROJECT_SOURCE_DIR}/../../../Thirdparty/g2o/lib/libg2o.so
 ${PROJECT_SOURCE_DIR}/../../../lib/libCORB_SLAM2.so
-${PROJECT_SOURCE_DIR}/../../../Thirdparty/featureCompression2/install/lib/libLBFC2.so
 )
 
 include_directories(
 ${PROJECT_SOURCE_DIR}
 ${PROJECT_SOURCE_DIR}/../../../
 ${PROJECT_SOURCE_DIR}/../../../include
-${PROJECT_SOURCE_DIR}/../../../Thirdparty/featureCompression2/install/include
 ${Pangolin_INCLUDE_DIRS}
 ${PROJECT_SOURCE_DIR}/../../../build/
 )

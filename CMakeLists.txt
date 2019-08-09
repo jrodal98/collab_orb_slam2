@@ -86,6 +86,7 @@ src/MapDatabase.cc
 src/MapMerging.cc
 src/MultiAgentInfo.cc
 src/Random.cpp
+src/Timestamp.cpp
 ${MAP_PB_SOURCE}
 ${AGENT_BRAIN_PB_SOURCE}
 )

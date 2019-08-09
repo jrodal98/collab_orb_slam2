@@ -50,6 +50,8 @@ class Frame
 public:
     Frame();
 
+    Frame(long unsigned int nId, int nAgentId, const cv::Mat &descriptions, const std::vector<cv::KeyPoint> &keypoints, ChosenVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth);
+
     // Copy constructor.
     Frame(const Frame &frame);
 

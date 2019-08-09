@@ -319,6 +319,61 @@ cv::Mat System::TrackRGBDCompressed(const FrameInfo &info, const std::vector<cv:
 	return Tcw;
 }
 
+cv::Mat System::TrackMonocular(const cv::Mat &descriptors, const std::vector<cv::KeyPoint> &keypoints, int nRobotId) {
+	if (mSensor != MONOCULAR)
+	{
+		cerr << "ERROR: you called TrackMonocular but input sensor was not set to Monocular." << endl;
+		exit(-1);
+	}
+
+	Tracking *pTracker = mpMapDatabase->GetMapHolderByAgentId(nRobotId)->pTracker;
+	LocalMapping *pLocalMapper = mpMapDatabase->GetMapHolderByAgentId(nRobotId)->pLocalMapper;
+
+	// Check mode change
+	{
+		unique_lock<mutex> lock(mMutexMode);
+		if (mbActivateLocalizationMode)
+		{
+			pLocalMapper->RequestStop();
+
+			// Wait until Local Mapping has effectively stopped
+			while (!pLocalMapper->isStopped())
+			{
+				usleep(1000);
+			}
+
+			pTracker->InformOnlyTracking(true);
+			mbActivateLocalizationMode = false;
+		}
+		if (mbDeactivateLocalizationMode)
+		{
+			pTracker->InformOnlyTracking(false);
+			pLocalMapper->Release();
+			mbDeactivateLocalizationMode = false;
+		}
+	}
+
+	// Check reset
+	{
+		unique_lock<mutex> lock(mMutexReset);
+		if (mbReset)
+		{
+			pTracker->Reset();
+			mbReset = false;
+		}
+	}
+
+// TODO
+	cv::Mat Tcw = pTracker->TrackMonocular(descriptors,keypoints); // don't forget to change this thing...
+
+	unique_lock<mutex> lock2(mMutexState);
+	mTrackingState = pTracker->mState;
+	mTrackedMapPoints = pTracker->mCurrentFrame.mvpMapPoints;
+	mTrackedKeyPointsUn = pTracker->mCurrentFrame.mvKeysUn;
+	SerializeData(nRobotId, Tcw);
+	return Tcw;
+}
+
 cv::Mat System::TrackMonocular(const cv::Mat &im, const double &timestamp, int nRobotId)
 {
 	if (mSensor != MONOCULAR)

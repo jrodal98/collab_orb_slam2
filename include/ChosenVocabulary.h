@@ -27,7 +27,7 @@
 #ifndef CHOSENVOCABULARY_H
 #define CHOSENVOCABULARY_H
 
-#include"Thirdparty/fbow/src/fbow.h"
+#include "Thirdparty/fbow/src/fbow.h"
 
 namespace CORB_SLAM2
 {
