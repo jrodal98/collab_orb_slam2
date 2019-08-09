@@ -1,7 +1,6 @@
 .vscode
 build
 Thirdparty
-Vocabulary
 dep
 *.so
 Examples/ROS/compression/KittiAgent*
