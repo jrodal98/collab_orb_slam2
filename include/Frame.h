@@ -49,8 +49,8 @@ class Frame
 {
 public:
     Frame();
-
-    Frame(long unsigned int nId, int nAgentId, const cv::Mat &descriptions, const std::vector<cv::KeyPoint> &keypoints, ChosenVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth);
+    // my constructor
+    Frame(long unsigned int nId, int nAgentId, const cv::Mat &descriptions, const std::vector<cv::KeyPoint> &keypoints, ChosenVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth, const int rows, const int cols);
 
     // Copy constructor.
     Frame(const Frame &frame);
@@ -239,6 +239,8 @@ private:
 
     // Computes image bounds for the undistorted image (called in the constructor).
     void ComputeImageBounds(const cv::Mat &imLeft);
+
+    void ComputeImageBounds(const int rows, int cols);
 
     // Assign keypoints to the grid for speed up feature matching (called in the constructor).
     void AssignFeaturesToGrid();

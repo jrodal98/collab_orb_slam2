@@ -131,7 +131,7 @@ void Optimizer::BundleAdjustment(const vector<KeyFrame *> &vpKFs, const vector<M
 				e->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex *>(optimizer.vertex(id)));
 				e->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex *>(optimizer.vertex(pKF->mnId)));
 				e->setMeasurement(obs);
-				const float &invSigma2 = pKF->mvInvLevelSigma2[kpUn.octave];
+				const float &invSigma2 = (pKF->mvInvLevelSigma2.empty()) ? 1.0 : pKF->mvInvLevelSigma2[kpUn.octave];
 				e->setInformation(Eigen::Matrix2d::Identity() * invSigma2);
 
 				if (bRobust)

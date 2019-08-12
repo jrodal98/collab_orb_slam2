@@ -110,8 +110,9 @@ void handle_agent(int robot_id)
         for (string description256: slam_data.descriptions()) {
             for (int i = 0; i < description256.size(); i += 8) {
                 string description8 = description256.substr(i,8);
-                bitset<8> b(description8);
-                descriptor_data[row][i/8] = ( b.to_ulong() & 0xFF);
+                // bitset<8> b(description8);
+                // descriptor_data[row][i/8] = ( b.to_ulong() & 0xFF);
+                descriptor_data[row][i/8] = std::stoi(description8, nullptr, 2);
             }
             row++;
         }
@@ -122,7 +123,8 @@ void handle_agent(int robot_id)
 			cv::KeyPoint kp(proto_kp.x(), proto_kp.y(), 7.f);
 			keypoints.push_back(kp);
 		}
-		SLAM->TrackMonocular(descriptors, keypoints, robot_id);
+		std::cerr << descriptors.size() << " " << keypoints.size() << std::endl;
+		SLAM->TrackMonocular(descriptors, keypoints, robot_id, imgHeight, imgWidth);
 	}
 }
 

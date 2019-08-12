@@ -180,7 +180,7 @@ Frame::Frame(long unsigned int nId, int nRobotId, const cv::Mat &imGray, const c
 
 // my monocular constructor
 Frame::Frame(long unsigned int nId, int nAgentId, const cv::Mat &descriptions, const std::vector<cv::KeyPoint> &keypoints, 
-        ChosenVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth)
+        ChosenVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth, const int rows, const int cols)
         : mnId(nId), mnAgentId(nAgentId), mvKeys(keypoints), mDescriptors(descriptions), mpORBvocabulary(voc),mK(K.clone()),mDistCoef(distCoef.clone()),
           mbf(bf), mThDepth(thDepth)  {
 
@@ -198,27 +198,27 @@ Frame::Frame(long unsigned int nId, int nAgentId, const cv::Mat &descriptions, c
     mvpMapPoints = vector<MapPoint*>(N,static_cast<MapPoint*>(NULL));
     mvbOutlier = vector<bool>(N,false);
 
-    // // This is done only for the first Frame (or after a change in the calibration)
-    // if(mbInitialComputations)
-    // {
-    //     ComputeImageBounds(imGray);
+    // This is done only for the first Frame (or after a change in the calibration)
+    if(mbInitialComputations)
+    {
+        ComputeImageBounds(rows,cols);
 
-    //     mfGridElementWidthInv=static_cast<float>(FRAME_GRID_COLS)/static_cast<float>(mnMaxX-mnMinX);
-    //     mfGridElementHeightInv=static_cast<float>(FRAME_GRID_ROWS)/static_cast<float>(mnMaxY-mnMinY);
+        mfGridElementWidthInv=static_cast<float>(FRAME_GRID_COLS)/static_cast<float>(mnMaxX-mnMinX);
+        mfGridElementHeightInv=static_cast<float>(FRAME_GRID_ROWS)/static_cast<float>(mnMaxY-mnMinY);
 
-    //     fx = K.at<float>(0,0);
-    //     fy = K.at<float>(1,1);
-    //     cx = K.at<float>(0,2);
-    //     cy = K.at<float>(1,2);
-    //     invfx = 1.0f/fx;
-    //     invfy = 1.0f/fy;
+        fx = K.at<float>(0,0);
+        fy = K.at<float>(1,1);
+        cx = K.at<float>(0,2);
+        cy = K.at<float>(1,2);
+        invfx = 1.0f/fx;
+        invfy = 1.0f/fy;
 
-    //     mbInitialComputations=false;
-    // }
+        mbInitialComputations=false;
+    }
 
-    // mb = mbf/fx;
+    mb = mbf/fx;
 
-    // AssignFeaturesToGrid();
+    AssignFeaturesToGrid();
 
 }
 
@@ -793,6 +793,36 @@ void Frame::ComputeImageBounds(const cv::Mat &imLeft)
         mnMaxX = imLeft.cols;
         mnMinY = 0.0f;
         mnMaxY = imLeft.rows;
+    }
+}
+
+void Frame::ComputeImageBounds(const int rows, const int cols)
+{
+    if(mDistCoef.at<float>(0)!=0.0)
+    {
+        cv::Mat mat(4,2,CV_32F);
+        mat.at<float>(0,0)=0.0; mat.at<float>(0,1)=0.0;
+        mat.at<float>(1,0)=cols; mat.at<float>(1,1)=0.0;
+        mat.at<float>(2,0)=0.0; mat.at<float>(2,1)=rows;
+        mat.at<float>(3,0)=cols; mat.at<float>(3,1)=rows;
+
+        // Undistort corners
+        mat=mat.reshape(2);
+        cv::undistortPoints(mat,mat,mK,mDistCoef,cv::Mat(),mK);
+        mat=mat.reshape(1);
+
+        mnMinX = min(mat.at<float>(0,0),mat.at<float>(2,0));
+        mnMaxX = max(mat.at<float>(1,0),mat.at<float>(3,0));
+        mnMinY = min(mat.at<float>(0,1),mat.at<float>(1,1));
+        mnMaxY = max(mat.at<float>(2,1),mat.at<float>(3,1));
+
+    }
+    else
+    {
+        mnMinX = 0.0f;
+        mnMaxX = cols;
+        mnMinY = 0.0f;
+        mnMaxY = rows;
     }
 }
 
