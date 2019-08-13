@@ -123,7 +123,6 @@ void handle_agent(int robot_id)
 			cv::KeyPoint kp(proto_kp.x(), proto_kp.y(), 7.f);
 			keypoints.push_back(kp);
 		}
-		std::cerr << descriptors.size() << " " << keypoints.size() << std::endl;
 		SLAM->TrackMonocular(descriptors, keypoints, robot_id, imgHeight, imgWidth);
 	}
 }
