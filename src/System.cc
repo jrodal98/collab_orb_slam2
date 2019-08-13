@@ -117,7 +117,7 @@ cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const
 	mTrackingState = pTracker->mState;
 	mTrackedMapPoints = pTracker->mCurrentFrame.mvpMapPoints;
 	mTrackedKeyPointsUn = pTracker->mCurrentFrame.mvKeysUn;
-	SerializeData(nRobotId, Tcw);
+	SerializeData(nRobotId);
 	return Tcw;
 }
 cv::Mat System::TrackMonoCompressed(const FrameInfo &info, const std::vector<cv::KeyPoint> &keyPointsLeft,
@@ -213,7 +213,7 @@ cv::Mat System::TrackStereoCompressed(const FrameInfo &info, const std::vector<c
 
 	unique_lock<mutex> lock2(mMutexState);
 	mTrackingState = pTracker->mState;
-	SerializeData(nRobotId, Tcw);
+	SerializeData(nRobotId);
 	return Tcw;
 }
 
@@ -267,7 +267,7 @@ cv::Mat System::TrackRGBD(const cv::Mat &im, const cv::Mat &depthmap, const doub
 	mTrackingState = pTracker->mState;
 	mTrackedMapPoints = pTracker->mCurrentFrame.mvpMapPoints;
 	mTrackedKeyPointsUn = pTracker->mCurrentFrame.mvKeysUn;
-	SerializeData(nRobotId, Tcw);
+	SerializeData(nRobotId);
 	return Tcw;
 }
 
@@ -315,7 +315,7 @@ cv::Mat System::TrackRGBDCompressed(const FrameInfo &info, const std::vector<cv:
 	cv::Mat Tcw = pTracker->GrabImageRGBDCompressed(info, keypoints, descriptors, visualWords, vfDepthValues, timestamp);
 	unique_lock<mutex> lock2(mMutexState);
 	mTrackingState = pTracker->mState;
-	SerializeData(nRobotId, Tcw);
+	SerializeData(nRobotId);
 	return Tcw;
 }
 
@@ -370,7 +370,7 @@ cv::Mat System::TrackMonocular(const cv::Mat &descriptors, const std::vector<cv:
 	mTrackingState = pTracker->mState;
 	mTrackedMapPoints = pTracker->mCurrentFrame.mvpMapPoints;
 	mTrackedKeyPointsUn = pTracker->mCurrentFrame.mvKeysUn;
-	SerializeData(nRobotId, Tcw);
+	SerializeData(nRobotId);
 	return Tcw;
 }
 
@@ -425,7 +425,7 @@ cv::Mat System::TrackMonocular(const cv::Mat &im, const double &timestamp, int n
 	mTrackingState = pTracker->mState;
 	mTrackedMapPoints = pTracker->mCurrentFrame.mvpMapPoints;
 	mTrackedKeyPointsUn = pTracker->mCurrentFrame.mvKeysUn;
-	SerializeData(nRobotId, Tcw);
+	SerializeData(nRobotId);
 	return Tcw;
 }
 
@@ -604,7 +604,7 @@ int System::GetTrackingState()
 }
 
 // Serialize nAgentId's data to stdout
-void System::SerializeData(int nAgentId, cv::Mat Tcw)
+void System::SerializeData(int nAgentId)
 {
 	/*
 	TODO:

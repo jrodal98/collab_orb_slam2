@@ -368,21 +368,21 @@ void MapPoint::UpdateNormalAndDepth()
         n++;
     }
 
-if (!pRefKF->mvScaleFactors.empty()) {
-cv::Mat PC = Pos - pRefKF->GetCameraCenter();
-    const float dist = cv::norm(PC);
+    if (!pRefKF->mvScaleFactors.empty()) {
+        cv::Mat PC = Pos - pRefKF->GetCameraCenter();
+        const float dist = cv::norm(PC);
 
-    const int level = pRefKF->mvKeysUn[observations[pRefKF]].octave;
-    const float levelScaleFactor = pRefKF->mvScaleFactors[level];
-    const int nLevels = pRefKF->mnScaleLevels;
+        const int level = pRefKF->mvKeysUn[observations[pRefKF]].octave;
+        const float levelScaleFactor = pRefKF->mvScaleFactors[level];
+        const int nLevels = pRefKF->mnScaleLevels;
 
-    {
-        boost::unique_lock<boost::shared_mutex> lock(mMutexPos);
-        mfMaxDistance = dist * levelScaleFactor;
-        mfMinDistance = mfMaxDistance / pRefKF->mvScaleFactors[nLevels - 1];
-        mNormalVector = normal / n;
+        {
+            boost::unique_lock<boost::shared_mutex> lock(mMutexPos);
+            mfMaxDistance = dist * levelScaleFactor;
+            mfMinDistance = mfMaxDistance / pRefKF->mvScaleFactors[nLevels - 1];
+            mNormalVector = normal / n;
+        }
     }
-}
 }
     
 

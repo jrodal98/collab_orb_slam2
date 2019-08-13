@@ -184,6 +184,42 @@ Frame::Frame(long unsigned int nId, int nAgentId, const cv::Mat &descriptions, c
         : mnId(nId), mnAgentId(nAgentId), mvKeys(keypoints), mDescriptors(descriptions), mpORBvocabulary(voc),mK(K.clone()),mDistCoef(distCoef.clone()),
           mbf(bf), mThDepth(thDepth)  {
 
+    // Scale Level Info
+    // mnScaleLevels = mpORBextractorLeft->GetLevels();
+    // mfScaleFactor = mpORBextractorLeft->GetScaleFactor();    
+    // mfLogScaleFactor = log(mfScaleFactor);
+    // mvScaleFactors = mpORBextractorLeft->GetScaleFactors();
+    // mvInvScaleFactors = mpORBextractorLeft->GetInverseScaleFactors();
+    // mvLevelSigma2 = mpORBextractorLeft->GetScaleSigmaSquares();
+    // mvInvLevelSigma2 = mpORBextractorLeft->GetInverseScaleSigmaSquares();
+
+    mnScaleLevels = 1;
+    mfScaleFactor = 1.0;
+    mfLogScaleFactor = 0.0;
+
+    mvScaleFactors.resize(mnScaleLevels);
+    mvLevelSigma2.resize(mnScaleLevels);
+    mvScaleFactors[0]=1.0f;
+    mvLevelSigma2[0]=1.0f;
+    for(int i=1; i<mnScaleLevels; i++)
+    {
+        mvScaleFactors[i]=mvScaleFactors[i-1]*mfScaleFactor;
+        mvLevelSigma2[i]=mvScaleFactors[i]*mvScaleFactors[i];
+    }
+
+    mvInvScaleFactors.resize(mnScaleLevels);
+    mvInvLevelSigma2.resize(mnScaleLevels);
+    for(int i=0; i<mnScaleLevels; i++)
+    {
+        mvInvScaleFactors[i]=1.0f/mvScaleFactors[i];
+        mvInvLevelSigma2[i]=1.0f/mvLevelSigma2[i];
+    }
+
+    // mvImagePyramid.resize(mnScaleLevels);
+
+    // mnFeaturesPerLevel.resize(mnScaleLevels);
+
+
     N = mvKeys.size();
 
     if(mvKeys.empty())

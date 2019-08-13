@@ -130,7 +130,7 @@ public:
     int GetTrackingState();
 
     // Serialize nAgentId's data to stdout
-    void SerializeData(int nAgentId, cv::Mat Tcw);
+    void SerializeData(int nAgentId);
 
 public:
     static unsigned int gnNumRobots;
