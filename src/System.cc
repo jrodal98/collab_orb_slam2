@@ -46,7 +46,7 @@ System::System(const string &strVocFile)
 
 	//Load ORB Vocabulary
 	std::cerr << endl
-			  << "Loading ORB Vocabulary. This could take a while..." << endl;
+			  << "Loading fbow Vocabulary. This could take a while..." << endl;
 
 	mpVocabulary = new ChosenVocabulary();
 	try {
