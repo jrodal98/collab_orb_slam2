@@ -38,7 +38,7 @@ namespace CORB_SLAM2
 KeyFrameDatabase::KeyFrameDatabase (const ChosenVocabulary &voc):
     mpVoc(&voc)
 {
-    mvInvertedFile.resize(voc.size() + 100000);
+    mvInvertedFile.resize(voc.size());
 }
 
 void KeyFrameDatabase::AddMap(KeyFrameDatabase *srcDB)
@@ -101,7 +101,7 @@ void KeyFrameDatabase::erase(KeyFrame* pKF)
 void KeyFrameDatabase::clear()
 {
     mvInvertedFile.clear();
-    mvInvertedFile.resize(mpVoc->size() + 100000);
+    mvInvertedFile.resize(mpVoc->size());
 }
 
 

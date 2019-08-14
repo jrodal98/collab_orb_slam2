@@ -10,5 +10,5 @@ message slam_data {
     }
 
     repeated keypoint keypoints = 1;
-    repeated string descriptions = 2;
+    repeated bytes descriptors = 2;
 }

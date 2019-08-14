@@ -766,7 +766,7 @@ void Frame::ComputeBoW()
         // 	levelUp = 3;
 
         // mpORBvocabulary->transform(vCurrentDesc,mBowVec,mFeatVec,levelUp);
-        mpORBvocabulary->transform(mDescriptors,3,mBowVec, mFeatVec);
+        mpORBvocabulary->transform(mDescriptors,4,mBowVec, mFeatVec);
     }
 }
 

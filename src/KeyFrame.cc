@@ -121,7 +121,7 @@ void KeyFrame::ComputeBoW()
         //     levelUp = 3;
 
         // I think the 3 should be a 4, since I trained a 10 ^ 6 vocabulary
-        mpORBvocabulary->transform(mDescriptors, 3,mBowVec, mFeatVec);
+        mpORBvocabulary->transform(mDescriptors, 4,mBowVec, mFeatVec);
     }
 }
 

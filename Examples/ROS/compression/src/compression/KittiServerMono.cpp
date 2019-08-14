@@ -104,19 +104,17 @@ void handle_agent(int robot_id)
 		data.resize(size);
 		fifo_file.read(static_cast<char*>(static_cast<void*>(data.data())), size);
 		slam_data.ParseFromArray(data.data(), size); // TODO THIS IS INEFFICIENT, I SHOULD BE ABLE TO PARSE STRAIGHT FROM THE PIPE
-		size_t data_size = slam_data.descriptions_size();
-        uchar descriptor_data[data_size][32];
-        int row = 0;
-        for (string description256: slam_data.descriptions()) {
-            for (int i = 0; i < description256.size(); i += 8) {
-                string description8 = description256.substr(i,8);
-                // bitset<8> b(description8);
-                // descriptor_data[row][i/8] = ( b.to_ulong() & 0xFF);
-                descriptor_data[row][i/8] = std::stoi(description8, nullptr, 2);
-            }
-            row++;
-        }
-        cv::Mat descriptors(data_size,32,0,&descriptor_data);
+		size_t rows = slam_data.descriptors_size();
+		uchar descriptors_arr[rows][61];
+		int row = 0;
+		for (auto x: slam_data.descriptors()) {
+			int i = 0;
+			for (uchar c: x) {
+				descriptors_arr[row][i++] = c;
+			}
+			row++;
+		}
+        cv::Mat descriptors(rows,61,0,&descriptors_arr);
 		std::vector<cv::KeyPoint> keypoints;
 		for (auto proto_kp: slam_data.keypoints()) {
 			// TODO: Extract color information as well
