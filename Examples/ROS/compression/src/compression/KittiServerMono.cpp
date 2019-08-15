@@ -105,7 +105,8 @@ void handle_agent(int robot_id)
 		fifo_file.read(static_cast<char*>(static_cast<void*>(data.data())), size);
 		slam_data.ParseFromArray(data.data(), size); // TODO THIS IS INEFFICIENT, I SHOULD BE ABLE TO PARSE STRAIGHT FROM THE PIPE
 		size_t rows = slam_data.descriptors_size();
-		uchar descriptors_arr[rows][61];
+		size_t cols = slam_data.descriptors()[0].size();
+		uchar descriptors_arr[rows][cols];
 		int row = 0;
 		for (auto x: slam_data.descriptors()) {
 			int i = 0;
@@ -114,14 +115,22 @@ void handle_agent(int robot_id)
 			}
 			row++;
 		}
-        cv::Mat descriptors(rows,61,0,&descriptors_arr);
+
+        cv::Mat descriptors(rows,cols,0,&descriptors_arr);
 		std::vector<cv::KeyPoint> keypoints;
+		std::vector<cv::Vec3b> colors;
 		for (auto proto_kp: slam_data.keypoints()) {
 			// TODO: Extract color information as well
 			cv::KeyPoint kp(proto_kp.x(), proto_kp.y(), 7.f);
+			cv::Vec3b bgr;
+			int i = 0;
+			for (auto bgr_val: proto_kp.bgr()){
+				bgr[i++] = bgr_val;
+			}
 			keypoints.push_back(kp);
+			colors.push_back(bgr);
 		}
-		SLAM->TrackMonocular(descriptors, keypoints, robot_id, imgHeight, imgWidth);
+		SLAM->TrackMonocular(descriptors, keypoints,colors, robot_id, imgHeight, imgWidth);
 	}
 }
 

@@ -319,7 +319,7 @@ cv::Mat System::TrackRGBDCompressed(const FrameInfo &info, const std::vector<cv:
 	return Tcw;
 }
 
-cv::Mat System::TrackMonocular(const cv::Mat &descriptors, const std::vector<cv::KeyPoint> &keypoints, int nRobotId, const int rows, const int cols) {
+cv::Mat System::TrackMonocular(const cv::Mat &descriptors, const std::vector<cv::KeyPoint> &keypoints, std::vector<cv::Vec3b> &colors, int nRobotId, const int rows, const int cols) {
 	// if (mSensor != MONOCULAR)
 	// {
 	// 	cerr << "ERROR: you called TrackMonocular but input sensor was not set to Monocular." << endl;
@@ -364,7 +364,7 @@ cv::Mat System::TrackMonocular(const cv::Mat &descriptors, const std::vector<cv:
 	}
 
 // TODO
-	cv::Mat Tcw = pTracker->TrackMonocular(descriptors,keypoints, rows, cols);
+	cv::Mat Tcw = pTracker->TrackMonocular(descriptors,keypoints, colors, rows, cols);
 
 	unique_lock<mutex> lock2(mMutexState);
 	mTrackingState = pTracker->mState;

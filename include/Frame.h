@@ -50,7 +50,7 @@ class Frame
 public:
     Frame();
     // my constructor
-    Frame(long unsigned int nId, int nAgentId, const cv::Mat &descriptions, const std::vector<cv::KeyPoint> &keypoints, ChosenVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth, const int rows, const int cols);
+    Frame(long unsigned int nId, int nAgentId, const cv::Mat &descriptions, const std::vector<cv::KeyPoint> &keypoints, std::vector<cv::Vec3b> &colors, ChosenVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth, const int rows, const int cols);
 
     // Copy constructor.
     Frame(const Frame &frame);
@@ -171,6 +171,8 @@ public:
 
     // Number of KeyPoints.
     int N;
+
+    std::vector<cv::Vec3b> bgr; // colors associated with frame
 
     // Vector of keypoints (original for visualization) and undistorted (actually used by the system).
     // In the stereo case, mvKeysUn is redundant as images must be rectified.

@@ -34,7 +34,7 @@ namespace CORB_SLAM2
 
 KeyFrame::KeyFrame(long unsigned int nId, Frame &F, Map *pMap, KeyFrameDatabase *pKFDB, cv::Mat img) : mnFrameId(F.mnId), mTimeStamp(F.mTimeStamp), mnGridCols(FRAME_GRID_COLS), mnGridRows(FRAME_GRID_ROWS),
                                                                                                        mfGridElementWidthInv(F.mfGridElementWidthInv), mfGridElementHeightInv(F.mfGridElementHeightInv),
-                                                                                                       fx(F.fx), fy(F.fy), cx(F.cx), cy(F.cy), invfx(F.invfx), invfy(F.invfy),
+                                                                                                       fx(F.fx), fy(F.fy), cx(F.cx), cy(F.cy), bgr(F.bgr), invfx(F.invfx), invfy(F.invfy),
                                                                                                        mbf(F.mbf), mb(F.mb), mThDepth(F.mThDepth), N(F.N), mvKeys(F.mvKeys), mvKeysUn(F.mvKeysUn),
                                                                                                        mvuRight(F.mvuRight), mvDepth(F.mvDepth), mDescriptors(F.mDescriptors.clone()),
                                                                                                        mBowVec(F.mBowVec), mFeatVec(F.mFeatVec), mnScaleLevels(F.mnScaleLevels), mfScaleFactor(F.mfScaleFactor),
@@ -58,6 +58,7 @@ KeyFrame::KeyFrame(long unsigned int nId, Frame &F, Map *pMap, KeyFrameDatabase 
     SetPose(F.mTcw);
 
     // set the bgr colors of the keypoints
+    // DEPRECATED WITH PYTHON AGENT, BUT KEEPING IT HERE IN CASE WE CHANGE IT BACK
     if (!img.empty())
     {
         bgr.resize(N);
@@ -120,8 +121,7 @@ void KeyFrame::ComputeBoW()
         // if (mpORBvocabulary->getDepthLevels() == 5)
         //     levelUp = 3;
 
-        // I think the 3 should be a 4, since I trained a 10 ^ 6 vocabulary
-        mpORBvocabulary->transform(mDescriptors, 4,mBowVec, mFeatVec);
+        mpORBvocabulary->transform(mDescriptors, 3 ,mBowVec, mFeatVec);
     }
 }
 

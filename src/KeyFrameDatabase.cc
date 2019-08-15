@@ -38,7 +38,7 @@ namespace CORB_SLAM2
 KeyFrameDatabase::KeyFrameDatabase (const ChosenVocabulary &voc):
     mpVoc(&voc)
 {
-    mvInvertedFile.resize(voc.size());
+    mvInvertedFile.resize(100000);
 }
 
 void KeyFrameDatabase::AddMap(KeyFrameDatabase *srcDB)
@@ -72,9 +72,12 @@ void KeyFrameDatabase::add(KeyFrame *pKF)
 {
     unique_lock<mutex> lock(mMutex);
 
-    for(fbow::fBow::const_iterator vit= pKF->mBowVec.begin(), vend=pKF->mBowVec.end(); vit!=vend; vit++)
+    for(fbow::fBow::const_iterator vit= pKF->mBowVec.begin(), vend=pKF->mBowVec.end(); vit!=vend; vit++) {
         // mvInvertedFile[vit->first].push_back(pKF);
+        if (vit->first > mvInvertedFile.size())
+            mvInvertedFile.resize(vit->first * 1.25);
         mvInvertedFile.at(vit->first).push_back(pKF);
+    }
 }
 
 void KeyFrameDatabase::erase(KeyFrame* pKF)
@@ -101,7 +104,7 @@ void KeyFrameDatabase::erase(KeyFrame* pKF)
 void KeyFrameDatabase::clear()
 {
     mvInvertedFile.clear();
-    mvInvertedFile.resize(mpVoc->size());
+    mvInvertedFile.resize(100000);
 }
 
 

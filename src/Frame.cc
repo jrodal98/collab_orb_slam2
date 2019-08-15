@@ -179,9 +179,9 @@ Frame::Frame(long unsigned int nId, int nRobotId, const cv::Mat &imGray, const c
 }
 
 // my monocular constructor
-Frame::Frame(long unsigned int nId, int nAgentId, const cv::Mat &descriptions, const std::vector<cv::KeyPoint> &keypoints, 
+Frame::Frame(long unsigned int nId, int nAgentId, const cv::Mat &descriptions, const std::vector<cv::KeyPoint> &keypoints, std::vector<cv::Vec3b> &colors, 
         ChosenVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth, const int rows, const int cols)
-        : mnId(nId), mnAgentId(nAgentId), mvKeys(keypoints), mDescriptors(descriptions), mpORBvocabulary(voc),mK(K.clone()),mDistCoef(distCoef.clone()),
+        : mnId(nId), mnAgentId(nAgentId), mvKeys(keypoints), mDescriptors(descriptions), bgr(colors), mpORBvocabulary(voc),mK(K.clone()),mDistCoef(distCoef.clone()),
           mbf(bf), mThDepth(thDepth)  {
 
     // Scale Level Info
@@ -195,7 +195,7 @@ Frame::Frame(long unsigned int nId, int nAgentId, const cv::Mat &descriptions, c
 
     mnScaleLevels = 1;
     mfScaleFactor = 1.0;
-    mfLogScaleFactor = 0.0;
+    mfLogScaleFactor = log(mfScaleFactor);
 
     mvScaleFactors.resize(mnScaleLevels);
     mvLevelSigma2.resize(mnScaleLevels);
@@ -766,7 +766,7 @@ void Frame::ComputeBoW()
         // 	levelUp = 3;
 
         // mpORBvocabulary->transform(vCurrentDesc,mBowVec,mFeatVec,levelUp);
-        mpORBvocabulary->transform(mDescriptors,4,mBowVec, mFeatVec);
+        mpORBvocabulary->transform(mDescriptors,3,mBowVec, mFeatVec);
     }
 }
 
