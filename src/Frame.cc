@@ -61,6 +61,87 @@ Frame::Frame(const Frame &frame)
         SetPose(frame.mTcw);
 }
 
+// my monocular constructor
+Frame::Frame(long unsigned int nId, int nAgentId, const cv::Mat &descriptions, const std::vector<cv::KeyPoint> &keypoints, std::vector<cv::Vec3b> &colors, 
+        ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth, const int rows, const int cols)
+        : mnId(nId), mnAgentId(nAgentId), mvKeys(keypoints), mDescriptors(descriptions), bgr(colors), mpORBvocabulary(voc),mK(K.clone()),mDistCoef(distCoef.clone()),
+          mbf(bf), mThDepth(thDepth)  {
+
+    // Scale Level Info
+    // mnScaleLevels = mpORBextractorLeft->GetLevels();
+    // mfScaleFactor = mpORBextractorLeft->GetScaleFactor();    
+    // mfLogScaleFactor = log(mfScaleFactor);
+    // mvScaleFactors = mpORBextractorLeft->GetScaleFactors();
+    // mvInvScaleFactors = mpORBextractorLeft->GetInverseScaleFactors();
+    // mvLevelSigma2 = mpORBextractorLeft->GetScaleSigmaSquares();
+    // mvInvLevelSigma2 = mpORBextractorLeft->GetInverseScaleSigmaSquares();
+
+    mnScaleLevels = 1;
+    mfScaleFactor = 1.0;
+    mfLogScaleFactor = log(mfScaleFactor);
+
+    mvScaleFactors.resize(mnScaleLevels);
+    mvLevelSigma2.resize(mnScaleLevels);
+    mvScaleFactors[0]=1.0f;
+    mvLevelSigma2[0]=1.0f;
+    for(int i=1; i<mnScaleLevels; i++)
+    {
+        mvScaleFactors[i]=mvScaleFactors[i-1]*mfScaleFactor;
+        mvLevelSigma2[i]=mvScaleFactors[i]*mvScaleFactors[i];
+    }
+
+    mvInvScaleFactors.resize(mnScaleLevels);
+    mvInvLevelSigma2.resize(mnScaleLevels);
+    for(int i=0; i<mnScaleLevels; i++)
+    {
+        mvInvScaleFactors[i]=1.0f/mvScaleFactors[i];
+        mvInvLevelSigma2[i]=1.0f/mvLevelSigma2[i];
+    }
+
+    // mvImagePyramid.resize(mnScaleLevels);
+
+    // mnFeaturesPerLevel.resize(mnScaleLevels);
+
+
+    N = mvKeys.size();
+
+    if(mvKeys.empty())
+        return;
+
+    UndistortKeyPoints();
+
+    // Set no stereo information
+    mvuRight = vector<float>(N,-1);
+    mvDepth = vector<float>(N,-1);
+
+    mvpMapPoints = vector<MapPoint*>(N,static_cast<MapPoint*>(NULL));
+    mvbOutlier = vector<bool>(N,false);
+
+    // This is done only for the first Frame (or after a change in the calibration)
+    if(mbInitialComputations)
+    {
+        ComputeImageBounds(rows,cols);
+
+        mfGridElementWidthInv=static_cast<float>(FRAME_GRID_COLS)/static_cast<float>(mnMaxX-mnMinX);
+        mfGridElementHeightInv=static_cast<float>(FRAME_GRID_ROWS)/static_cast<float>(mnMaxY-mnMinY);
+
+        fx = K.at<float>(0,0);
+        fy = K.at<float>(1,1);
+        cx = K.at<float>(0,2);
+        cy = K.at<float>(1,2);
+        invfx = 1.0f/fx;
+        invfy = 1.0f/fy;
+
+        mbInitialComputations=false;
+    }
+
+    mb = mbf/fx;
+
+    AssignFeaturesToGrid();
+
+}
+
+
 //stereo frame
 Frame::Frame(long unsigned int nId, int nRobotId, const cv::Mat &imLeft, const cv::Mat &imRight, const double &timeStamp, ORBextractor* extractorLeft, ORBextractor* extractorRight, ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth)
     :mpORBvocabulary(voc),mpORBextractorLeft(extractorLeft),mpORBextractorRight(extractorRight), mTimeStamp(timeStamp), mK(K.clone()),mDistCoef(distCoef.clone()), mbf(bf), mThDepth(thDepth),
@@ -718,6 +799,36 @@ void Frame::ComputeImageBounds(const cv::Mat &imLeft)
         mnMaxX = imLeft.cols;
         mnMinY = 0.0f;
         mnMaxY = imLeft.rows;
+    }
+}
+
+void Frame::ComputeImageBounds(const int rows, const int cols)
+{
+    if(mDistCoef.at<float>(0)!=0.0)
+    {
+        cv::Mat mat(4,2,CV_32F);
+        mat.at<float>(0,0)=0.0; mat.at<float>(0,1)=0.0;
+        mat.at<float>(1,0)=cols; mat.at<float>(1,1)=0.0;
+        mat.at<float>(2,0)=0.0; mat.at<float>(2,1)=rows;
+        mat.at<float>(3,0)=cols; mat.at<float>(3,1)=rows;
+
+        // Undistort corners
+        mat=mat.reshape(2);
+        cv::undistortPoints(mat,mat,mK,mDistCoef,cv::Mat(),mK);
+        mat=mat.reshape(1);
+
+        mnMinX = min(mat.at<float>(0,0),mat.at<float>(2,0));
+        mnMaxX = max(mat.at<float>(1,0),mat.at<float>(3,0));
+        mnMinY = min(mat.at<float>(0,1),mat.at<float>(1,1));
+        mnMaxY = max(mat.at<float>(2,1),mat.at<float>(3,1));
+
+    }
+    else
+    {
+        mnMinX = 0.0f;
+        mnMaxX = cols;
+        mnMinY = 0.0f;
+        mnMaxY = rows;
     }
 }
 

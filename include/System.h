@@ -94,6 +94,8 @@ public:
     // Input images: RGB (CV_8UC3) or grayscale (CV_8U). RGB is converted to grayscale.
     // Returns the camera pose (empty if tracking fails).
     cv::Mat TrackMonocular(const cv::Mat &im, const double &timestamp, int nAgentId);
+    // my tracking function
+    cv::Mat TrackMonocular(const cv::Mat &descriptors, const std::vector<cv::KeyPoint> &keypoints, std::vector<cv::Vec3b> &colors, int nRobotId, const int rows, const int cols);
     cv::Mat TrackMonoCompressed(const FrameInfo &info, const std::vector<cv::KeyPoint> &keyPointsLeft,
                                 const cv::Mat &descriptorLeft, const std::vector<unsigned int> &visualWords,
                                 const std::vector<cv::KeyPoint> &keyPointsRight, const cv::Mat &descriptorRight,
@@ -129,7 +131,7 @@ public:
     int GetTrackingState();
 
     // Serialize nAgentId's data to stdout
-    void SerializeData(int nAgentId, cv::Mat Tcw);
+    void SerializeData(int nAgentId);
 
 public:
     static unsigned int gnNumRobots;

@@ -53,6 +53,9 @@ public:
 
     // Copy constructor.
     Frame(const Frame &frame);
+    // my constructor
+    Frame(long unsigned int nId, int nAgentId, const cv::Mat &descriptions, const std::vector<cv::KeyPoint> &keypoints, std::vector<cv::Vec3b> &colors, 
+        ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth, const int rows, const int cols);
 
     // Constructor for stereo cameras.
     Frame(long unsigned int nId, int nAgentId, const cv::Mat &imLeft, const cv::Mat &imRight, const double &timeStamp, ORBextractor* extractorLeft, ORBextractor* extractorRight, ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth);
@@ -139,6 +142,8 @@ public:
     int GetAgentId();
 
 public:
+    std::vector<cv::Vec3b> bgr; // colors associated with frame
+
     // Vocabulary used for relocalization.
     ORBVocabulary* mpORBvocabulary;
 
@@ -236,6 +241,9 @@ private:
 
     // Computes image bounds for the undistorted image (called in the constructor).
     void ComputeImageBounds(const cv::Mat &imLeft);
+
+    // my bound computer
+    void ComputeImageBounds(const int rows, int cols);
 
     // Assign keypoints to the grid for speed up feature matching (called in the constructor).
     void AssignFeaturesToGrid();

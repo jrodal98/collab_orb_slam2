@@ -27,10 +27,7 @@
 
 #include "boost/program_options.hpp"
 
-#include "compression/msg_features.h"
-
 #include "System.h"
-#include "feature_coder.h"
 #include <iostream>
 #include <stdio.h>
 #include <string.h>
@@ -45,14 +42,12 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-
 #include "agent_brain.pb.h"
 
 namespace po = boost::program_options;
 
 // Setup decoder
-ORBVocabulary voc;
-LBFC2::CodingStats codingModel;
+DBoW2::TemplatedVocabulary<DBoW2::FORB::TDescriptor, DBoW2::FORB> voc;
 CORB_SLAM2::System *SLAM;
 
 // Adapt to agent
@@ -89,34 +84,6 @@ void signal_handler(int signal)
 	exit(signal);
 }
 
-void trackMono(CORB_SLAM2::System *SLAM, const CORB_SLAM2::FrameInfo &info, const std::vector<cv::KeyPoint> &keyPointsLeft,
-			   const cv::Mat &descriptorLeft, const std::vector<unsigned int> &visualWords,
-			   const std::vector<cv::KeyPoint> &keyPointsRight, const cv::Mat &descriptorRight,
-			   const double &timestamp, int nAgentId, const cv::Mat &img)
-{
-	//SLAM->TrackMonoCompressed(info, keyPointsLeft, descriptorLeft, visualWords, keyPointsRight, descriptorRight, timestamp, nAgentId);
-	SLAM->TrackStereoCompressed(info, keyPointsLeft, descriptorLeft, visualWords, keyPointsRight, descriptorRight, timestamp, nAgentId, img);
-}
-
-void track(int robot_id, std::vector<uchar> &data, std::vector<uchar> &img_vec, CORB_SLAM2::System *SLAM, LBFC2::FeatureCoder *coder)
-{
-	cv::Mat img = cv::imdecode(img_vec, 1);
-	std::vector<unsigned int> vDecVisualWords;
-	std::vector<cv::KeyPoint> vDecKeypointsLeft, vDecKeypointsRight;
-	cv::Mat decDescriptorsLeft, decDescriptorsRight;
-
-	// Get frame info
-	CORB_SLAM2::FrameInfo info;
-	info.mnHeight = imgHeight;
-	info.mnWidth = imgWidth;
-
-	int nAgentId = robot_id;
-	coder->decodeImageStereo(data, vDecKeypointsLeft, decDescriptorsLeft, vDecKeypointsRight, decDescriptorsRight, vDecVisualWords);
-	const double tframe = 0.0; // the timeframe seems unnecessary right now, will have to actually do something about this if I'm incorrect
-	trackMono(SLAM, info, vDecKeypointsLeft, decDescriptorsLeft, vDecVisualWords,
-			  vDecKeypointsRight, decDescriptorsRight, tframe, nAgentId, img);
-}
-
 void handle_agent(int robot_id)
 {
 	std::cerr << "Handling robot " << robot_id << std::endl;
@@ -124,7 +91,6 @@ void handle_agent(int robot_id)
 	std::string myfifo = "outpipe" + std::to_string(robot_id);
 	std::ifstream fifo_file(myfifo);
 	std::cerr << "Opened fifo " << myfifo << std::endl;
-	LBFC2::FeatureCoder *coder = new LBFC2::FeatureCoder(voc, codingModel, imgWidth, imgHeight, nlevels, 32, bufferSize, inter, stereo, depth);
 	std::vector<uchar> data;
 	std::vector<uchar> img;
 	while (fifo_file && !fifo_file.eof())
@@ -132,14 +98,37 @@ void handle_agent(int robot_id)
 		uint64_t size;
 		fifo_file.read(static_cast<char*>(static_cast<void*>(&size)), sizeof(size));
 		if(!size) break;
+		agent_brain::slam_data slam_data;
 		data.resize(size);
 		fifo_file.read(static_cast<char*>(static_cast<void*>(data.data())), size);
+		slam_data.ParseFromArray(data.data(), size); // TODO THIS IS INEFFICIENT, I SHOULD BE ABLE TO PARSE STRAIGHT FROM THE PIPE
+		size_t rows = slam_data.descriptors_size();
+		size_t cols = slam_data.descriptors()[0].size();
+		uchar descriptors_arr[rows][cols];
+		int row = 0;
+		for (auto x: slam_data.descriptors()) {
+			int i = 0;
+			for (uchar c: x) {
+				descriptors_arr[row][i++] = c;
+			}
+			row++;
+		}
 
-		fifo_file.read(static_cast<char*>(static_cast<void*>(&size)), sizeof(size));
-		img.resize(size);
-		fifo_file.read(static_cast<char*>(static_cast<void*>(img.data())), size);
-
-		track(robot_id, data, img, SLAM, coder);
+        cv::Mat descriptors(rows,cols,0,&descriptors_arr);
+		std::vector<cv::KeyPoint> keypoints;
+		std::vector<cv::Vec3b> colors;
+		for (auto proto_kp: slam_data.keypoints()) {
+			// TODO: Extract color information as well
+			cv::KeyPoint kp(proto_kp.x(), proto_kp.y(), 7.f);
+			cv::Vec3b bgr;
+			int i = 0;
+			for (auto bgr_val: proto_kp.bgr()){
+				bgr[i++] = bgr_val;
+			}
+			keypoints.push_back(kp);
+			colors.push_back(bgr);
+		}
+		SLAM->TrackMonocular(descriptors, keypoints,colors, robot_id, imgHeight, imgWidth);
 	}
 }
 
@@ -160,7 +149,6 @@ int main(int argc, char **argv)
 	// Load coding model
 	std::string stats_path = vm["coding"].as<std::string>();
 	std::cerr << "Loading statistics from " << stats_path << std::endl;
-	codingModel.load(stats_path);
 
 	// Setup ORB SLAM - make sure to use the correct settings file
 	std::string settings_path = vm["settings"].as<std::string>();
@@ -173,9 +161,6 @@ int main(int argc, char **argv)
 	SLAM = new CORB_SLAM2::System(voc_path);
 
 	signal(SIGINT, signal_handler);
-
-	std::map<int, LBFC2::FeatureCoder *> coderMap;
-	std::map<int, std::thread> threadPool;
 
 	int robot_id = 0;
 	std::vector<std::thread> agents;

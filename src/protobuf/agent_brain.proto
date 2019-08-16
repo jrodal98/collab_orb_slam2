@@ -4,11 +4,11 @@ package agent_brain;
 
 message slam_data {
     message keypoint  {
-        uint32 x = 1;
-        uint32 y = 2;
+        float x = 1;
+        float y = 2;
         repeated uint32 bgr = 3;
     }
 
     repeated keypoint keypoints = 1;
-    repeated string descriptions = 2;
+    repeated bytes descriptors = 2;
 }

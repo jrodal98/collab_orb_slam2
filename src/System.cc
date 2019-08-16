@@ -71,6 +71,62 @@ void System::InitAgent(int nRobotId, std::string strSettings, Sensor sensor, boo
 	mpMapDatabase->AddMap(nRobotId, pSlamConfig, sensor, bUseViewer);
 }
 
+// my track monocular
+cv::Mat System::TrackMonocular(const cv::Mat &descriptors, const std::vector<cv::KeyPoint> &keypoints, std::vector<cv::Vec3b> &colors, int nRobotId, const int rows, const int cols) {
+	// if (mSensor != MONOCULAR)
+	// {
+	// 	cerr << "ERROR: you called TrackMonocular but input sensor was not set to Monocular." << endl;
+	// 	exit(-1);
+	// }
+
+	Tracking *pTracker = mpMapDatabase->GetMapHolderByAgentId(nRobotId)->pTracker;
+	LocalMapping *pLocalMapper = mpMapDatabase->GetMapHolderByAgentId(nRobotId)->pLocalMapper;
+
+	// Check mode change
+	{
+		unique_lock<mutex> lock(mMutexMode);
+		if (mbActivateLocalizationMode)
+		{
+			pLocalMapper->RequestStop();
+
+			// Wait until Local Mapping has effectively stopped
+			while (!pLocalMapper->isStopped())
+			{
+				usleep(1000);
+			}
+
+			pTracker->InformOnlyTracking(true);
+			mbActivateLocalizationMode = false;
+		}
+		if (mbDeactivateLocalizationMode)
+		{
+			pTracker->InformOnlyTracking(false);
+			pLocalMapper->Release();
+			mbDeactivateLocalizationMode = false;
+		}
+	}
+
+	// Check reset
+	{
+		unique_lock<mutex> lock(mMutexReset);
+		if (mbReset)
+		{
+			pTracker->Reset();
+			mbReset = false;
+		}
+	}
+
+// TODO
+	cv::Mat Tcw = pTracker->TrackMonocular(descriptors,keypoints, colors, rows, cols);
+
+	unique_lock<mutex> lock2(mMutexState);
+	mTrackingState = pTracker->mState;
+	mTrackedMapPoints = pTracker->mCurrentFrame.mvpMapPoints;
+	mTrackedKeyPointsUn = pTracker->mCurrentFrame.mvKeysUn;
+	SerializeData(nRobotId);
+	return Tcw;
+}
+
 cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const double &timestamp, int nRobotId)
 {
 	Tracking *pTracker = mpMapDatabase->GetMapHolderByAgentId(nRobotId)->pTracker;
@@ -115,7 +171,7 @@ cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const
 	mTrackingState = pTracker->mState;
 	mTrackedMapPoints = pTracker->mCurrentFrame.mvpMapPoints;
 	mTrackedKeyPointsUn = pTracker->mCurrentFrame.mvKeysUn;
-	SerializeData(nRobotId, Tcw);
+	SerializeData(nRobotId);
 	return Tcw;
 }
 cv::Mat System::TrackMonoCompressed(const FrameInfo &info, const std::vector<cv::KeyPoint> &keyPointsLeft,
@@ -211,7 +267,7 @@ cv::Mat System::TrackStereoCompressed(const FrameInfo &info, const std::vector<c
 
 	unique_lock<mutex> lock2(mMutexState);
 	mTrackingState = pTracker->mState;
-	SerializeData(nRobotId, Tcw);
+	SerializeData(nRobotId);
 	return Tcw;
 }
 
@@ -265,7 +321,7 @@ cv::Mat System::TrackRGBD(const cv::Mat &im, const cv::Mat &depthmap, const doub
 	mTrackingState = pTracker->mState;
 	mTrackedMapPoints = pTracker->mCurrentFrame.mvpMapPoints;
 	mTrackedKeyPointsUn = pTracker->mCurrentFrame.mvKeysUn;
-	SerializeData(nRobotId, Tcw);
+	SerializeData(nRobotId);
 	return Tcw;
 }
 
@@ -313,7 +369,7 @@ cv::Mat System::TrackRGBDCompressed(const FrameInfo &info, const std::vector<cv:
 	cv::Mat Tcw = pTracker->GrabImageRGBDCompressed(info, keypoints, descriptors, visualWords, vfDepthValues, timestamp);
 	unique_lock<mutex> lock2(mMutexState);
 	mTrackingState = pTracker->mState;
-	SerializeData(nRobotId, Tcw);
+	SerializeData(nRobotId);
 	return Tcw;
 }
 
@@ -547,7 +603,7 @@ int System::GetTrackingState()
 }
 
 // Serialize nAgentId's data to stdout
-void System::SerializeData(int nAgentId, cv::Mat Tcw)
+void System::SerializeData(int nAgentId)
 {
 	/*
 	TODO:

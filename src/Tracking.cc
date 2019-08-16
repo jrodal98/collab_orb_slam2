@@ -571,6 +571,13 @@ void Tracking::StereoInitialization()
 	}
 }
 
+cv::Mat Tracking::TrackMonocular(const cv::Mat &descriptions, const std::vector<cv::KeyPoint> &keypoints, std::vector<cv::Vec3b> &colors, const int rows, const int cols){
+	const long unsigned int nId = mpLocalMapper->GetNextFrameId(mnAgentId);
+	mCurrentFrame = Frame(nId, mnAgentId, descriptions, keypoints, colors, mpORBVocabulary, mK, mDistCoef, mbf, mThDepth, rows, cols);
+	Track();
+	return mCurrentFrame.mTcw.clone();
+}
+
 void Tracking::MonocularInitialization()
 {
 
